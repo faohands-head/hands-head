@@ -8,6 +8,14 @@
       "created": "2026-05-22",
       "source": "briefing",
       "briefing": "acessosvip-websiteapp.md"
+    },
+    {
+      "name": "Quotes to Scrape",
+      "slug": "websiteapp-quotes-toscrape-com-ed7b35a3",
+      "url": "https://faohands-head.github.io/hands-head/previews/websiteapp-quotes-toscrape-com-ed7b35a3/",
+      "status": "built",
+      "created": "2026-05-22",
+      "source": "scraper"
     }
   ]
 }
