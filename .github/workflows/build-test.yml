@@ -1,0 +1,14 @@
+name: Build & Test
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm install --legacy-peer-deps
+        working-directory: projects/websiteapp-acessosvipclientes-com-br-56722640
+      - run: npm run build
+        working-directory: projects/websiteapp-acessosvipclientes-com-br-56722640
