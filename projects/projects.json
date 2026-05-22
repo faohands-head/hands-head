@@ -1,0 +1,13 @@
+{
+  "projects": [
+    {
+      "name": "Acessos VIP Clientes",
+      "slug": "websiteapp-acessosvipclientes-com-br-56722640",
+      "url": "https://faohands-head.github.io/hands-head/projects/websiteapp-acessosvipclientes-com-br-56722640/out/",
+      "status": "built",
+      "created": "2026-05-22",
+      "source": "briefing",
+      "briefing": "acessosvip-websiteapp.md"
+    }
+  ]
+}

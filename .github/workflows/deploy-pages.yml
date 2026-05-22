@@ -5,9 +5,11 @@ on:
     branches: [main]
     paths:
       - 'projects/**'
+      - 'index.html'
+      - 'projects/projects.json'
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -16,36 +18,40 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: projects/*/package.json
 
-      - name: Find changed project
-        id: project
+      - name: Build all projects
         run: |
-          CHANGED=$(git diff --name-only HEAD~1 HEAD -- projects/ | cut -d/ -f2 | sort -u | head -1)
-          echo "name=$CHANGED" >> $GITHUB_OUTPUT
-          echo "dir=projects/$CHANGED" >> $GITHUB_OUTPUT
+          mkdir -p public/previews
+          for dir in projects/*/; do
+            if [ -f "$dir/package.json" ]; then
+              name=$(basename "$dir")
+              echo "Building $name..."
+              cd "$dir"
+              npm install --legacy-peer-deps 2>/dev/null
+              npm run build 2>/dev/null && echo "OK $name" || echo "FAIL $name"
+              cd ../..
+              if [ -d "$dir/out" ]; then
+                cp -r "$dir/out" "public/previews/$name"
+              fi
+            fi
+          done
 
-      - name: Install & Build
-        if: steps.project.outputs.name != ''
+      - name: Copy dashboard
         run: |
-          cd ${{ steps.project.outputs.dir }}
-          npm install --legacy-peer-deps
-          npm run build
+          cp index.html public/
+          cp projects/projects.json public/projects.json
 
       - name: Upload artifact
-        if: steps.project.outputs.name != ''
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ steps.project.outputs.dir }}/out
+          path: public
 
       - name: Deploy to GitHub Pages
-        if: steps.project.outputs.name != ''
         id: deployment
         uses: actions/deploy-pages@v4

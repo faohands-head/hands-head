@@ -170,6 +170,32 @@ created: {today}
     print(f"[WEBSITEAPP] Relatorio: {report_name}")
 
 
+def update_manifest(spec, project_dir):
+    """Adiciona projeto ao manifest projects.json"""
+    from datetime import date
+    manifest_path = CAID_DIR / "projects" / "projects.json"
+    pname = spec.get("project_name", "WebsiteApp")
+    slug = project_dir.name
+    client = spec.get("client", pname)
+    entry = {
+        "name": client,
+        "slug": slug,
+        "url": f"https://faohands-head.github.io/hands-head/previews/{slug}/",
+        "status": "built",
+        "created": str(date.today()),
+        "source": "briefing" if spec.get("_briefing") else "scraper",
+    }
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text())
+    else:
+        manifest = {"projects": []}
+    # Remove duplicatas pelo slug
+    manifest["projects"] = [p for p in manifest["projects"] if p.get("slug") != slug]
+    manifest["projects"].append(entry)
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
+    print(f"[WEBSITEAPP] Manifest atualizado: {slug}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="FAO HANDS - WebsiteApp Generator")
     parser.add_argument("--url", help="URL do site do cliente")
@@ -211,6 +237,9 @@ def main():
     if not args.no_install:
         print("\n--- Instalando Dependencias ---")
         install_and_preview(project_dir)
+
+    print("\n--- Dashboard ---")
+    update_manifest(spec, project_dir)
 
     print("\n--- Obsidian ---")
     save_obsidian(spec, project_dir)
