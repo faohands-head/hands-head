@@ -95,7 +95,14 @@ def generate_project(spec):
 
     # Config files
     (project_dir / "tsconfig.json").write_text('{"compilerOptions":{"target":"es5","lib":["dom","dom.iterable","esnext"],"allowJs":true,"skipLibCheck":true,"strict":true,"noEmit":true,"esModuleInterop":true,"module":"esnext","moduleResolution":"bundler","resolveJsonModule":true,"isolatedModules":true,"jsx":"preserve","incremental":true,"plugins":[{"name":"next"}],"paths":{"@/*":["./src/*"]}},"include":["next-env.d.ts","**/*.ts","**/*.tsx",".next/types/**/*.ts"],"exclude":["node_modules"]}')
-    (project_dir / "next.config.mjs").write_text("/** @type {import('next').NextConfig} */\nconst nextConfig = {}\nexport default nextConfig\n")
+    (project_dir / "next.config.mjs").write_text("""/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+  images: { unoptimized: true },
+  trailingSlash: true,
+}
+export default nextConfig
+""")
     (project_dir / "postcss.config.js").write_text("module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } }")
     (project_dir / "tailwind.config.ts").write_text(_TAILWIND_CONFIG)
     (project_dir / "next-env.d.ts").write_text('/// <reference types="next" />\n/// <reference types="next/image-types/global" />\n')

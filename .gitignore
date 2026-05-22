@@ -4,14 +4,13 @@ node_modules/
 __pycache__/
 .DS_Store
 Thumbs.db
-projects/*/
-!projects/*.md
 *.env
 Fao Head/
+.vault/
+out/
 
 # Obsidian machine-specific
 vault/.obsidian/workspace.json
 vault/.obsidian/graph.json
 vault/.obsidian/workspace.yml
-vault/Sem *.canvas
 vault/**/*.canvas

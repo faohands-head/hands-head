@@ -29,14 +29,15 @@ def add_to_project(project_dir: str, spec: dict):
     (p / "src/components/ui").mkdir(parents=True, exist_ok=True)
 
     icon_imports = ", ".join(n["icon"] for n in nav_items)
-    nav_items_str = json.dumps(nav_items)
+    # Gera array TypeScript com referencias aos componentes, nao strings
+    nav_items_ts = "[" + ", ".join(f'{{ icon: {n["icon"]}, label: "{n["label"]}" }}' for n in nav_items) + "]"
     sidebar_icons = ", ".join(n["icon"] for n in nav_items[:6])
 
     # Bottom Nav
-    _write_file(p, "src/components/layout/BottomNav.tsx", _BOTTOM_NAV_T % (icon_imports, nav_items_str))
+    _write_file(p, "src/components/layout/BottomNav.tsx", _BOTTOM_NAV_T % (icon_imports, nav_items_ts))
 
     # Sidebar
-    _write_file(p, "src/components/layout/Sidebar.tsx", _SIDEBAR_T % (sidebar_icons, nav_items_str, client))
+    _write_file(p, "src/components/layout/Sidebar.tsx", _SIDEBAR_T % (sidebar_icons, nav_items_ts, client))
 
     # Layout
     _write_file(p, "src/app/layout.tsx", _LAYOUT_T % (project_name, goal, project_name))
@@ -236,7 +237,7 @@ export default function Home() {
                 <p className="text-xl text-muted-foreground max-w-3xl mx-auto">{section.text}</p>
               </header>
             )}
-            {section.type === 'cards' && (
+            {section.type === 'cards' && section.items && (
               <div className="grid gap-6 md:grid-cols-3">
                 {section.items.map((item, j) => (
                   <div key={j} className="bg-card rounded-2xl p-6 shadow-sm border hover:shadow-md transition-shadow">
@@ -246,7 +247,7 @@ export default function Home() {
                 ))}
               </div>
             )}
-            {section.type === 'content' && (
+            {section.type === 'content' && section.paragraphs && (
               <div className="prose prose-gray max-w-none">
                 {section.paragraphs.map((p, j) => (
                   <p key={j} className="text-muted-foreground mb-4">{p}</p>
