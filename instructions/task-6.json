@@ -1,0 +1,123 @@
+{
+  "task_id": 6,
+  "description": "Implementa\u00e7\u00e3o das funcionalidades de Servi\u00e7os, Planos e Suporte",
+  "worktree": "C:\\FaoFluxo\\FAO-HANDS\\projects\\vipapp-295363e1\\wt-6",
+  "branch": "feature/task-6",
+  "spec": {
+    "project_type": "websiteapp",
+    "project_name": "VIPApp",
+    "goal": "Transformar o website atual em um WebsiteApp com experi\u00eancia de aplicativo no navegador, tanto no desktop quanto no celular.",
+    "pages": [
+      "Home",
+      "Servi\u00e7os",
+      "Planos",
+      "Suporte",
+      "Conta"
+    ],
+    "components": [
+      "Bottom Navigation Bar",
+      "Hamburger Menu",
+      "Sidebar Retr\u00e1til",
+      "Cards e Sombras Suaves",
+      "PWA Elements (Service Worker, Manifest.json)",
+      "Lucide Icons"
+    ],
+    "features": [
+      "Offline Support via Service Worker",
+      "Installable PWA on Mobile",
+      "Modern and Clean Design",
+      "Mode Dark opcional"
+    ],
+    "tasks": [
+      {
+        "id": 1,
+        "description": "Design da Home Page com Bottom Navigation Bar e Hamburger Menu",
+        "dependencies": [],
+        "type": "design"
+      },
+      {
+        "id": 2,
+        "description": "Desenvolvimento de Componentes: Bottom Navigation Bar, Hamburger Menu, Sidebar Retr\u00e1til",
+        "dependencies": [
+          1
+        ],
+        "type": "code"
+      },
+      {
+        "id": 3,
+        "description": "Implementa\u00e7\u00e3o do PWA - Service Worker e Manifest.json",
+        "dependencies": [],
+        "type": "code"
+      },
+      {
+        "id": 4,
+        "description": "Design de Cards e Sombras Suaves",
+        "dependencies": [
+          1
+        ],
+        "type": "design"
+      },
+      {
+        "id": 5,
+        "description": "Desenvolvimento de Componentes: Cards e Sombras Suaves",
+        "dependencies": [
+          4
+        ],
+        "type": "code"
+      },
+      {
+        "id": 6,
+        "description": "Implementa\u00e7\u00e3o das funcionalidades de Servi\u00e7os, Planos e Suporte",
+        "dependencies": [],
+        "type": "code"
+      },
+      {
+        "id": 7,
+        "description": "Desenvolvimento da Conta (Login e Dashboard)",
+        "dependencies": [],
+        "type": "code"
+      },
+      {
+        "id": 8,
+        "description": "Responsividade 100% para Desktop e Mobile",
+        "dependencies": [
+          2,
+          3
+        ],
+        "type": "code"
+      },
+      {
+        "id": 9,
+        "description": "Testes de Usabilidade e Feedback dos usu\u00e1rios",
+        "dependencies": [
+          6,
+          7,
+          8
+        ],
+        "type": "testing"
+      },
+      {
+        "id": 10,
+        "description": "Integra\u00e7\u00e3o final do projeto com a plataforma Next.js + Tailwind + shadcn/ui",
+        "dependencies": [
+          2,
+          3,
+          5,
+          6,
+          7,
+          8
+        ],
+        "type": "code"
+      },
+      {
+        "id": 11,
+        "description": "Documenta\u00e7\u00e3o do Projeto e Treinamento do Cliente",
+        "dependencies": [
+          9,
+          10
+        ],
+        "type": "documentation"
+      }
+    ]
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "task_id": 2,
+  "description": "Configura\u00e7\u00e3o do projeto Next.js",
+  "worktree": "C:\\FaoFluxo\\CAID\\projects\\project-ce7560f2\\wt-task-2",
+  "branch": "feature/task-2",
+  "project_name": "OdontoLanding",
+  "spec": {
+    "project_name": "OdontoLanding",
+    "project_type": "landing",
+    "goal": "Criar landing page para cl\u00ednica odontol\u00f3gica premium com WhatsApp, formul\u00e1rio de agendamento e depoimentos",
+    "stack": [
+      "Next.js",
+      "Tailwind",
+      "shadcn/ui"
+    ],
+    "pages": [
+      "Home"
+    ],
+    "components": [
+      "Header",
+      "Footer",
+      "WhatsAppButton",
+      "AgendaForm",
+      "TestimonialsSection"
+    ],
+    "features": [
+      "Integra\u00e7\u00e3o WhatsApp",
+      "Formul\u00e1rio de agendamento",
+      "Depoimentos"
+    ],
+    "tasks": [
+      {
+        "id": 1,
+        "description": "Design e prot\u00f3tipo da landing page",
+        "dependencies": [],
+        "estimated_time": "30min"
+      },
+      {
+        "id": 2,
+        "description": "Configura\u00e7\u00e3o do projeto Next.js",
+        "dependencies": [],
+        "estimated_time": "15min"
+      },
+      {
+        "id": 3,
+        "description": "Desenvolvimento do layout da Home",
+        "dependencies": [
+          1,
+          2
+        ],
+        "estimated_time": "45min"
+      },
+      {
+        "id": 4,
+        "description": "Implementa\u00e7\u00e3o dos componentes Header e Footer",
+        "dependencies": [
+          3
+        ],
+        "estimated_time": "20min"
+      },
+      {
+        "id": 5,
+        "description": "Integra\u00e7\u00e3o do WhatsAppButton usando lib shadcn/ui",
+        "dependencies": [
+          3
+        ],
+        "estimated_time": "15min"
+      },
+      {
+        "id": 6,
+        "description": "Desenvolvimento do formul\u00e1rio de agendamento",
+        "dependencies": [
+          3
+        ],
+        "estimated_time": "30min"
+      },
+      {
+        "id": 7,
+        "description": "Implementa\u00e7\u00e3o da se\u00e7\u00e3o de depoimentos",
+        "dependencies": [
+          3
+        ],
+        "estimated_time": "25min"
+      },
+      {
+        "id": 8,
+        "description": "Testes e ajuste final da landing page",
+        "dependencies": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "estimated_time": "10min"
+      }
+    ]
+  }
+}

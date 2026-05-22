@@ -1,0 +1,17 @@
+node_modules/
+.next/
+*.pyc
+__pycache__/
+.DS_Store
+Thumbs.db
+projects/*/
+!projects/*.md
+*.env
+Fao Head/
+
+# Obsidian machine-specific
+vault/.obsidian/workspace.json
+vault/.obsidian/graph.json
+vault/.obsidian/workspace.yml
+vault/Sem *.canvas
+vault/**/*.canvas
