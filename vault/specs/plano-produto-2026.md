@@ -20,8 +20,8 @@ Website comum → **WebApp real** (App Shell, PWA, IR v1.0.0, patch incremental,
 | 0 | Fundação e higiene | **concluida** | Git limpo, manifest, segurança |
 | 1 | Pipeline URL confiável | **em andamento** | VIP briefing 100% preservação |
 | 2 | IR como contrato único | **concluida** | URL/prompt/briefing → AppIR |
-| 3 | App Shell produção | **em andamento** | PWA + shell responsivo |
-| 4 | Agentes + Patch | pendente | JSON Patch sem rebuild |
+| 3 | App Shell produção | **concluida** | TopBar, Sidebar, PWA, dark mode |
+| 4 | Agentes + Patch | **em andamento** | JSON Patch sem rebuild |
 | 5 | Ops e automação | pendente | CI, n8n, vault sync |
 | 6 | Produto comercial | pendente | 1º cliente pago |
 
@@ -61,3 +61,13 @@ py -3 scripts\websiteapp.py --from-brain acessosvip-websiteapp.md --out-dir webs
 - [x] `websiteapp.py` sempre passa pelo IR antes do render
 - [x] `--prompt` modo WebsiteApp usa mesmo pipeline
 - [x] `validate_ir.py` para checagem do JSON
+
+## Etapa 3 — checklist
+
+- [x] `TopAppBar` fixa com busca + toggle tema
+- [x] `Sidebar` desktop 270px sempre visível; drawer no mobile
+- [x] `BottomNav` só mobile (max 5 itens)
+- [x] `AppShell` + Framer Motion entre rotas
+- [x] Dark mode (`class` + script anti-flash + localStorage)
+- [x] PWA v3: manifest maskable, SW offline, `offline.html`
+- [x] Golden VIP regenerado com shell v3

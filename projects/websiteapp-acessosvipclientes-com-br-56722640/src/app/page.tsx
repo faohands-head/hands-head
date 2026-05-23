@@ -1,15 +1,12 @@
 'use client'
-import BottomNav from '@/components/layout/BottomNav'
-import Sidebar from '@/components/layout/Sidebar'
+import AppShell from '@/components/layout/AppShell'
 import { ArrowRight, CheckCircle } from 'lucide-react'
 
 const sections: any = [{"type": "hero", "title": "Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de clientes.", "text": "Gestão de acessos VIP", "className": "bg-gradient-to-br from-primary/5 via-background to-background"}, {"type": "cards", "items": [{"title": "Acessos VIP Clientes é uma empresa que oferece sol", "text": "Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de clientes."}, {"title": "Gestão de acessos VIP", "text": "Gestão de acessos VIP"}, {"title": "Controle de entrada e saída", "text": "Controle de entrada e saída"}, {"title": "Relatórios personalizados", "text": "Relatórios personalizados"}], "className": ""}, {"type": "cta", "title": "Solicite uma demonstração gratuita e descubra como podemos a", "text": "Solicite uma demonstração gratuita e descubra como podemos ajudar.", "button_label": "Saiba Mais", "button_url": "#contato", "className": "bg-muted/30"}, {"type": "content", "paragraphs": ["Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de clientes.", "Gestão de acessos VIP", "Controle de entrada e saída", "Relatórios personalizados", "Integração com sistemas terceiros", "Suporte 24 horas", "Bem-vindo à Acessos VIP Clientes. Sua solução completa em gestão de acessos.", "Oferecemos tecnologia de ponta para controle de entrada e saída.", "Nossos sistemas são integrados com as principais plataformas do mercado.", "Mais de 500 empresas confiam na Acessos VIP Clientes.", "Suporte técnico especializado disponível 24 horas por dia.", "Transforme a gestão de acessos da sua empresa com a Acessos VIP Clientes.", "Solicite uma demonstração gratuita e descubra como podemos ajudar.", "Plano Básico: Acesso simples com relatórios mensais", "Plano Profissional: Gestão completa + integrações", "Plano Enterprise: Tudo do Profissional + suporte dedicado + SLA"], "className": ""}, {"type": "footer", "text": "(c) 2026 Acessos VIP Clientes. Todos os direitos reservados.", "className": ""}]
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
-      <Sidebar />
-      <main className="max-w-5xl mx-auto px-4 pt-20 pb-24 md:pb-12">
+    <AppShell>
         {sections.map((section: any, i: number) => (
           <section key={i} className={'mb-16 ' + (section.className || '')}>
             {section.type === 'hero' && (
@@ -109,8 +106,6 @@ export default function Page() {
             )}
           </section>
         ))}
-      </main>
-      <BottomNav />
-    </div>
+    </AppShell>
   )
 }

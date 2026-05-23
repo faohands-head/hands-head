@@ -158,6 +158,7 @@ def generate_project(spec, out_dir: str | None = None):
         "dependencies": {
             "next": "^15.2.0", "react": "^19.0.0", "react-dom": "^19.0.0",
             "lucide-react": "^0.400.0",
+            "framer-motion": "^11.15.0",
         },
         "devDependencies": {
             "typescript": "^5.8.2",
@@ -199,6 +200,7 @@ export default nextConfig
 """)
     (project_dir / "tailwind.config.js").write_text("""/** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {

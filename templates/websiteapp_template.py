@@ -44,14 +44,18 @@ def add_to_project(project_dir: str, spec: dict):
             primary_color = c
             break
 
-    # Bottom Nav
+    # App Shell (Etapa 3)
     _write_file(p, "src/components/layout/BottomNav.tsx", _BOTTOM_NAV_T % (icon_imports, nav_items_ts))
-
-    # Sidebar
-    _write_file(p, "src/components/layout/Sidebar.tsx", _SIDEBAR_T % (sidebar_icons, nav_items_ts, client))
+    safe_title = project_name.replace("'", "\\'")
+    safe_client = client.replace("'", "\\'")
+    _write_file(p, "src/components/layout/Sidebar.tsx", _SIDEBAR_T % (sidebar_icons, nav_items_ts, safe_client, safe_client))
+    _write_file(p, "src/components/layout/TopAppBar.tsx", _TOP_APP_BAR_T % safe_title)
+    _write_file(p, "src/components/layout/AppShell.tsx", _APP_SHELL_T % safe_title)
+    _write_file(p, "src/components/ThemeProvider.tsx", _THEME_PROVIDER_T)
+    _write_file(p, "src/components/ServiceWorkerRegister.tsx", _SW_REGISTER_T)
 
     # Layout
-    _write_file(p, "src/app/layout.tsx", _LAYOUT_T % (project_name, goal, project_name))
+    _write_file(p, "src/app/layout.tsx", _LAYOUT_T % (project_name, goal, project_name, primary_color))
 
     # Globals CSS
     primary_hsl = _hex_to_hsl(primary_color)
@@ -80,17 +84,21 @@ def add_to_project(project_dir: str, spec: dict):
     # PWA
     _write_file(p, "public/manifest.json", json.dumps({
         "name": project_name, "short_name": project_name[:15], "description": goal,
-        "start_url": "/", "display": "standalone",
+        "start_url": "/", "display": "standalone", "orientation": "portrait-primary",
         "background_color": "#ffffff", "theme_color": primary_color,
-        "icons": [{"src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml"},
-                  {"src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml"}]
-    }))
+        "categories": ["business", "productivity"],
+        "icons": [
+            {"src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable"},
+            {"src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable"},
+        ],
+    }, indent=2))
     _write_file(p, "public/sw.js", _SW_T)
+    _write_file(p, "public/offline.html", _OFFLINE_HTML_T % project_name)
 
     # Icons
-    initials = "".join(w[0].upper() for w in client.split()[:2] if w)
-    _write_file(p, "public/icon-192.svg", _SVG_192_T % primary_color)
-    _write_file(p, "public/icon-512.svg", _SVG_512_T % primary_color)
+    initials = "".join(w[0].upper() for w in client.split()[:2] if w) or "WA"
+    _write_file(p, "public/icon-192.svg", _SVG_192_T % (primary_color, initials))
+    _write_file(p, "public/icon-512.svg", _SVG_512_T % (primary_color, initials))
 
     print(f"[WEBSITEAPP] Projeto gerado: {project_name}")
     print(f"[WEBSITEAPP] {len(texts)} textos, {len(animations)} animacoes, {len(colors)} cores, {len(routes)} paginas")
@@ -299,10 +307,10 @@ def _hex_to_hsl(hex_color):
     return f"{round(h)} {round(s * 100)}% {round(l * 100)}%"
 
 
-# --- Template strings ---
+# --- Template strings (App Shell v3 — Etapa 3) ---
 
 _BOTTOM_NAV_T = """'use client'
-import React, { useState } from 'react'
+import React from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { %s } from 'lucide-react'
 
@@ -311,18 +319,19 @@ const items: { icon: React.ElementType; label: string; route: string }[] = %s
 export default function BottomNav() {
   const router = useRouter()
   const pathname = usePathname()
-  const activeIndex = items.findIndex(i => i.route === pathname)
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 safe-area-bottom">
-      <div className="flex items-center justify-around max-w-lg mx-auto h-full px-2">
-        {items.map((item, i) => (
-          <button key={i} onClick={() => router.push(item.route)}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all duration-200
-              ${activeIndex === i ? 'text-primary scale-110' : 'text-muted-foreground hover:text-foreground'}`}>
-            <item.icon className="w-5 h-5" />
-            <span className="text-[10px] font-medium">{item.label}</span>
-          </button>
-        ))}
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-16 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[env(safe-area-inset-bottom)]">
+      <div className="flex items-center justify-around max-w-lg mx-auto h-full px-1">
+        {items.slice(0, 5).map((item, i) => {
+          const active = pathname === item.route
+          return (
+            <button key={i} type="button" onClick={() => router.push(item.route)}
+              className={'flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all duration-200 ' + (active ? 'text-primary scale-110' : 'text-muted-foreground hover:text-foreground')}>
+              <item.icon className="w-5 h-5" />
+              <span className="text-[10px] font-medium leading-none">{item.label}</span>
+            </button>
+          )
+        })}
       </div>
     </nav>
   )
@@ -330,49 +339,174 @@ export default function BottomNav() {
 """
 
 _SIDEBAR_T = """'use client'
-import React, { useState } from 'react'
+import React from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { X, Menu, %s } from 'lucide-react'
+import { X, %s } from 'lucide-react'
 
 const items: { icon: React.ElementType; label: string; route: string }[] = %s
 
-export default function Sidebar() {
-  const [open, setOpen] = useState(false)
+type Props = { mobileOpen?: boolean; onClose?: () => void }
+
+export default function Sidebar({ mobileOpen = false, onClose }: Props) {
   const router = useRouter()
   const pathname = usePathname()
+
+  const nav = (
+    <nav className="p-3 space-y-1">
+      {items.map((item, i) => {
+        const isActive = pathname === item.route
+        return (
+          <button key={i} type="button" onClick={() => { router.push(item.route); onClose?.() }}
+            className={'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left ' + (isActive ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-foreground')}>
+            <item.icon className="w-5 h-5 shrink-0" />
+            <span>{item.label}</span>
+          </button>
+        )
+      })}
+    </nav>
+  )
+
   return (
     <>
-      <button onClick={() => setOpen(true)}
-        className="fixed top-4 left-4 z-50 p-2 rounded-xl bg-background/80 backdrop-blur border shadow-sm hover:bg-muted transition-colors">
-        <Menu className="w-5 h-5" />
-      </button>
-      {open && <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setOpen(false)} />}
-      <aside className={"fixed top-0 left-0 h-full w-72 bg-background border-r z-50 transform transition-transform duration-300 shadow-2xl " + (open ? 'translate-x-0' : '-translate-x-full')}>
-        <div className="flex items-center justify-between p-4 border-b">
-          <span className="font-bold text-lg">%s</span>
-          <button onClick={() => setOpen(false)} className="hover:bg-muted p-1 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
+      <aside className="hidden md:flex md:flex-col md:fixed md:top-14 md:left-0 md:w-[270px] md:h-[calc(100vh-3.5rem)] md:border-r md:bg-background/95 md:z-30">
+        <div className="p-4 border-b font-bold text-lg truncate">%s</div>
+        {nav}
+      </aside>
+      {mobileOpen && <div className="md:hidden fixed inset-0 bg-black/40 z-40" onClick={onClose} aria-hidden />}
+      <aside className={'md:hidden fixed top-0 left-0 h-full w-[270px] bg-background border-r z-50 shadow-2xl transform transition-transform duration-300 ' + (mobileOpen ? 'translate-x-0' : '-translate-x-full')}>
+        <div className="flex items-center justify-between p-4 border-b mt-14">
+          <span className="font-bold text-lg truncate">%s</span>
+          <button type="button" onClick={onClose} className="hover:bg-muted p-1 rounded-lg" aria-label="Fechar menu"><X className="w-5 h-5" /></button>
         </div>
-        <nav className="p-2">
-          {items.map((item, i) => {
-            const isActive = pathname === item.route
-            return (
-              <a key={i} href={item.route} onClick={(e) => { e.preventDefault(); router.push(item.route); setOpen(false) }}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors mb-1 ${isActive ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-foreground'}`}>
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </a>
-            )
-          })}
-        </nav>
+        {nav}
       </aside>
     </>
   )
 }
 """
 
-_LAYOUT_T = """import type { Metadata } from 'next'
+_TOP_APP_BAR_T = """'use client'
+import React from 'react'
+import { Menu, Search, Moon, Sun } from 'lucide-react'
+import { useTheme } from '@/components/ThemeProvider'
+
+type Props = { title: string; onMenuClick?: () => void }
+
+export default function TopAppBar({ title, onMenuClick }: Props) {
+  const { theme, toggle } = useTheme()
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 pt-[env(safe-area-inset-top)]">
+      <div className="flex items-center justify-between h-14 px-3 md:px-4 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2 min-w-0">
+          <button type="button" onClick={onMenuClick} className="md:hidden p-2 rounded-xl hover:bg-muted" aria-label="Abrir menu">
+            <Menu className="w-5 h-5" />
+          </button>
+          <span className="font-semibold text-base md:text-lg truncate">%s</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button type="button" className="p-2 rounded-xl hover:bg-muted text-muted-foreground" aria-label="Buscar">
+            <Search className="w-5 h-5" />
+          </button>
+          <button type="button" onClick={toggle} className="p-2 rounded-xl hover:bg-muted" aria-label="Alternar tema">
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+        </div>
+      </div>
+    </header>
+  )
+}
+"""
+
+_APP_SHELL_T = """'use client'
+import React, { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import TopAppBar from '@/components/layout/TopAppBar'
+import Sidebar from '@/components/layout/Sidebar'
+import BottomNav from '@/components/layout/BottomNav'
+
+export default function AppShell({ children }: { children: React.ReactNode }) {
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const pathname = usePathname()
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <TopAppBar title="%s" onMenuClick={() => setDrawerOpen(true)} />
+      <Sidebar mobileOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <div className="pt-14 md:pl-[270px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="max-w-5xl mx-auto px-4 md:px-8 py-6 pb-24 md:pb-8"
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <BottomNav />
+    </div>
+  )
+}
+"""
+
+_THEME_PROVIDER_T = """'use client'
+import React, { createContext, useContext, useEffect, useState } from 'react'
+
+type Theme = 'light' | 'dark'
+const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({ theme: 'light', toggle: () => {} })
+
+export function useTheme() {
+  return useContext(ThemeContext)
+}
+
+export default function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<Theme>('light')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('fao-theme') as Theme | null
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const t = stored || (prefersDark ? 'dark' : 'light')
+    setTheme(t)
+    document.documentElement.classList.toggle('dark', t === 'dark')
+    setMounted(true)
+  }, [])
+
+  const toggle = () => {
+    setTheme(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark'
+      localStorage.setItem('fao-theme', next)
+      document.documentElement.classList.toggle('dark', next === 'dark')
+      return next
+    })
+  }
+
+  if (!mounted) return <>{children}</>
+  return <ThemeContext.Provider value={{ theme, toggle }}>{children}</ThemeContext.Provider>
+}
+"""
+
+_SW_REGISTER_T = """'use client'
+import { useEffect } from 'react'
+
+export default function ServiceWorkerRegister() {
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    }
+  }, [])
+  return null
+}
+"""
+
+_LAYOUT_T = """import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import ThemeProvider from '@/components/ThemeProvider'
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -383,11 +517,24 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, statusBarStyle: 'default', title: '%s' },
 }
 
+export const viewport: Viewport = {
+  themeColor: [{ media: '(prefers-color-scheme: light)', color: '%s' }, { media: '(prefers-color-scheme: dark)', color: '#0f172a' }],
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
+
+const themeScript = `(function(){try{var t=localStorage.getItem('fao-theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark')}catch(e){}})();`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
-      <body className={inter.className + ' pb-16 md:pb-0 antialiased'}>
-        {children}
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>
+      <body className={inter.className + ' antialiased min-h-screen'}>
+        <ThemeProvider>
+          {children}
+          <ServiceWorkerRegister />
+        </ThemeProvider>
       </body>
     </html>
   )
@@ -452,17 +599,14 @@ _GLOBALS_CSS_T = """@tailwind base;
 """
 
 _PAGE_T = """'use client'
-import BottomNav from '@/components/layout/BottomNav'
-import Sidebar from '@/components/layout/Sidebar'
+import AppShell from '@/components/layout/AppShell'
 import { ArrowRight, CheckCircle } from 'lucide-react'
 
 const sections: any = %s
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
-      <Sidebar />
-      <main className="max-w-5xl mx-auto px-4 pt-20 pb-24 md:pb-12">
+    <AppShell>
         {sections.map((section: any, i: number) => (
           <section key={i} className={'mb-16 ' + (section.className || '')}>
             {section.type === 'hero' && (
@@ -562,21 +706,32 @@ export default function Page() {
             )}
           </section>
         ))}
-      </main>
-      <BottomNav />
-    </div>
+    </AppShell>
   )
 }
 """
 
-_SW_T = """const C='v1',U=['/','/index.html'];self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(U)))});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))})"""
+_SW_T = """const CACHE='fao-websiteapp-v3';
+const PRECACHE=['/','/offline.html','/manifest.json','/icon-192.svg','/icon-512.svg'];
+self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(PRECACHE)))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))))});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  e.respondWith(caches.match(e.request).then(cached=>{
+    const fetched=fetch(e.request).then(res=>{if(res&&res.status===200){const clone=res.clone();caches.open(CACHE).then(c=>c.put(e.request,clone))}return res}).catch(()=>cached);
+    return cached||fetched;
+  }).catch(()=>caches.match('/offline.html')))
+});
+"""
+
+_OFFLINE_HTML_T = """<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>%s — Offline</title><style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0f172a;color:#f8fafc;text-align:center;padding:1rem}</style></head><body><div><h1>Voce esta offline</h1><p>Reabra o app quando a conexao voltar.</p></div></body></html>"""
 
 _SVG_192_T = """<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
   <rect width="192" height="192" rx="32" fill="%s"/>
-  <text x="96" y="120" font-family="Arial,sans-serif" font-size="80" font-weight="bold" fill="white" text-anchor="middle">AV</text>
+  <text x="96" y="120" font-family="Arial,sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">%s</text>
 </svg>"""
 
 _SVG_512_T = """<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="64" fill="%s"/>
-  <text x="256" y="300" font-family="Arial,sans-serif" font-size="200" font-weight="bold" fill="white" text-anchor="middle">AV</text>
+  <text x="256" y="300" font-family="Arial,sans-serif" font-size="180" font-weight="bold" fill="white" text-anchor="middle">%s</text>
 </svg>"""

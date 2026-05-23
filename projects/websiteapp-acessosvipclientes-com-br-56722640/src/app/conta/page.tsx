@@ -1,15 +1,12 @@
 'use client'
-import BottomNav from '@/components/layout/BottomNav'
-import Sidebar from '@/components/layout/Sidebar'
+import AppShell from '@/components/layout/AppShell'
 import { ArrowRight, CheckCircle } from 'lucide-react'
 
 const sections: any = [{"type": "hero", "title": "Minha Conta", "text": "Gerencie seu perfil e preferencias", "className": ""}, {"type": "form", "fields": [{"name": "nome", "type": "text", "label": "Nome"}, {"name": "email", "type": "email", "label": "E-mail"}, {"name": "telefone", "type": "tel", "label": "Telefone"}], "submit_label": "Atualizar Cadastro", "className": "max-w-lg mx-auto"}, {"type": "footer", "text": "(c) 2026 Acessos VIP Clientes. Todos os direitos reservados.", "className": ""}]
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
-      <Sidebar />
-      <main className="max-w-5xl mx-auto px-4 pt-20 pb-24 md:pb-12">
+    <AppShell>
         {sections.map((section: any, i: number) => (
           <section key={i} className={'mb-16 ' + (section.className || '')}>
             {section.type === 'hero' && (
@@ -109,8 +106,6 @@ export default function Page() {
             )}
           </section>
         ))}
-      </main>
-      <BottomNav />
-    </div>
+    </AppShell>
   )
 }
