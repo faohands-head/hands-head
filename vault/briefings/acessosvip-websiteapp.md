@@ -3,7 +3,7 @@ tipo: websiteapp
 cliente: Acessos VIP Clientes
 url: https://acessosvipclientes.com.br/
 prioridade: urgente
-status: pendente
+status: em_progresso
 created: 2026-05-22
 ---
 

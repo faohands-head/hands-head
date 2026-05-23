@@ -161,32 +161,37 @@ Retorne JSON:
         return True
 
     def step4_execute_tasks(self):
-        print("\n[4/6] Executando tasks via Claude Code + Ollama...")
+        print("\n[4/6] Executando tasks via agentes locais...")
+        from agents.base import llm_call, parse_json_response
+        
         for tid, wt in self.worktrees.items():
             task = next((t for t in self.tasks if t["id"] == tid), {})
             desc = task.get("description", "implementar")
-            print(f"  Task {tid}: {desc} em {wt['dir']}")
+            print(f"  Task {tid}: {desc}")
             
-            prompt = f"""Você está no diretório {wt['dir']}.
-Projeto: {self.spec.get('project_name')}
-Tipo: {self.spec.get('project_type')}
-Contexto: {self.spec.get('goal', '')}
+            # Tenta executar via LLM local
+            system_prompt = f"""Você é um engenheiro frontend Next.js.
+Gere código React/JSX completo para: {desc}
+Projeto: {self.spec.get('project_name')} ({self.spec.get('project_type')})
+Stack: Next.js + Tailwind + shadcn/ui
+Diretório alvo: {wt['dir']}
 
-Sua tarefa: {desc}
-
-Implemente os arquivos necessários neste diretório. Use git add e git commit após finalizar."""
+Retorne APENAS uma lista de arquivos JSON no formato:
+[{{"path": "src/app/page.tsx", "content": "código completo"}}]"""
             
             try:
-                r = subprocess.run(
-                    ["ollama", "launch", "claude", "--model", LLM_MODEL],
-                    input=prompt, text=True, capture_output=True, timeout=300,
-                    cwd=wt["dir"]
-                )
-                print(f"    Claude: ok ({len(r.stdout)} chars)")
-            except subprocess.TimeoutExpired:
-                print(f"    Claude: timeout (>300s)")
+                result = llm_call(desc, system_prompt)
+                parsed = parse_json_response(result)
+                if parsed and isinstance(parsed, list):
+                    for file_def in parsed:
+                        path = Path(wt['dir']) / file_def["path"]
+                        path.parent.mkdir(parents=True, exist_ok=True)
+                        path.write_text(file_def["content"])
+                        print(f"    Gerado: {file_def['path']}")
+                else:
+                    print(f"    LLM não retornou arquivos válidos, pulando")
             except Exception as e:
-                print(f"    Claude: {e}")
+                print(f"    Erro na task {tid}: {e}")
             
             run_cmd("git add .", wt["dir"])
             r = run_cmd(f'git diff --cached --quiet', wt["dir"])

@@ -1,7 +1,7 @@
 ---
 tipo: spec
 operacao: websiteapp
-status: planejamento
+status: em_producao
 created: 2026-05-22
 ---
 

@@ -43,6 +43,22 @@ FAO-HANDS/
 └── README.md
 ```
 
+## Setup
+
+```powershell
+cd C:\FaoFluxo\FAO-HANDS
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+playwright install chromium
+copy .env.example .env
+# Edite .env com suas chaves (nunca commitar)
+```
+
+Roadmap: `vault/specs/plano-produto-2026.md` · Segurança: `vault/specs/seguranca.md`
+
+**Cliente golden:** `projects/websiteapp-acessosvipclientes-com-br-56722640`
+
 ## Requisitos
 
 - Python 3.12+

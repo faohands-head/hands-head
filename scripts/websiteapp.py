@@ -4,10 +4,12 @@ FAO HANDS - WebsiteApp Command
 Uso:
   python scripts/websiteapp.py --url https://site-do-cliente.com.br/
   python scripts/websiteapp.py --from-brain briefing-cliente.md
+  python scripts/websiteapp.py --prompt "crie um app de tarefas"
 
 Pipeline: Scraper -> Gerar Projeto -> npm install -> Preview -> Obsidian Report
+Modo --prompt: Prompt -> Planner -> Builder -> Compiler -> Build -> Deploy
 """
-import os, sys, json, uuid, subprocess, argparse
+import os, sys, json, uuid, subprocess, argparse, time, shutil
 from pathlib import Path
 
 CAID_DIR = Path(__file__).resolve().parent.parent
@@ -57,11 +59,11 @@ def load_briefing(filename: str) -> dict:
     spec["extracted"] = {"texts": lines[:50], "colors": [], "fonts": [], "animations": [], "animations_raw": {}, "sections": []}
     spec["struct"] = {"text_count": len(lines)}
     spec["nav_items"] = [
-        {"icon": "Home", "label": "Inicio"},
-        {"icon": "Briefcase", "label": "Servicos"},
-        {"icon": "CreditCard", "label": "Planos"},
-        {"icon": "Headphones", "label": "Suporte"},
-        {"icon": "User", "label": "Conta"},
+        {"icon": "Home", "label": "Inicio", "route": "/"},
+        {"icon": "Briefcase", "label": "Servicos", "route": "/servicos"},
+        {"icon": "CreditCard", "label": "Planos", "route": "/planos"},
+        {"icon": "Headphones", "label": "Suporte", "route": "/suporte"},
+        {"icon": "User", "label": "Conta", "route": "/conta"},
     ]
     print(f"[WEBSITEAPP] Briefing carregado: {filename} ({len(lines)} linhas)")
     return spec
@@ -80,36 +82,93 @@ def generate_project(spec):
         "name": project_name, "version": "0.1.0", "private": True,
         "scripts": {"dev": "next dev", "build": "next build", "start": "next start", "lint": "next lint"},
         "dependencies": {
-            "next": "^14.2.0", "react": "^18.3.0", "react-dom": "^18.3.0",
-            "lucide-react": "^0.400.0", "class-variance-authority": "^0.7.0",
-            "clsx": "^2.1.0", "tailwind-merge": "^2.3.0", "tailwindcss-animate": "^1.0.7",
-            "@radix-ui/react-slot": "^1.0.2", "@radix-ui/react-dialog": "^1.0.5",
-            "@radix-ui/react-dropdown-menu": "^2.0.6",
+            "next": "^15.2.0", "react": "^19.0.0", "react-dom": "^19.0.0",
+            "lucide-react": "^0.400.0",
         },
         "devDependencies": {
-            "@types/node": "^20.0.0", "@types/react": "^18.3.0",
-            "@types/react-dom": "^18.3.0", "typescript": "^5.4.0",
-            "tailwindcss": "^3.4.0", "postcss": "^8.4.0", "autoprefixer": "^10.4.0",
+            "typescript": "^5.8.2",
+            "@types/react": "^19.0.0",
+            "@types/node": "^20.0.0"
         }
     }, indent=2))
 
     # Config files
-    (project_dir / "tsconfig.json").write_text('{"compilerOptions":{"target":"es5","lib":["dom","dom.iterable","esnext"],"allowJs":true,"skipLibCheck":true,"strict":true,"noEmit":true,"esModuleInterop":true,"module":"esnext","moduleResolution":"bundler","resolveJsonModule":true,"isolatedModules":true,"jsx":"preserve","incremental":true,"plugins":[{"name":"next"}],"paths":{"@/*":["./src/*"]}},"include":["next-env.d.ts","**/*.ts","**/*.tsx",".next/types/**/*.ts"],"exclude":["node_modules"]}')
-    (project_dir / "next.config.mjs").write_text("""/** @type {import('next').NextConfig} */
-const nextConfig = {
+    (project_dir / "next.config.mjs").write_text("""const nextConfig = {
   output: 'export',
   images: { unoptimized: true },
   trailingSlash: true,
 }
 export default nextConfig
 """)
-    (project_dir / "postcss.config.js").write_text("module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } }")
-    (project_dir / "tailwind.config.ts").write_text(_TAILWIND_CONFIG)
-    (project_dir / "next-env.d.ts").write_text('/// <reference types="next" />\n/// <reference types="next/image-types/global" />\n')
+    (project_dir / "tsconfig.json").write_text("""{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "incremental": true,
+    "module": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] },
+    "plugins": [{ "name": "next" }]
+  },
+  "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
+""")
+    (project_dir / "tailwind.config.js").write_text("""/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
+        secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
+        destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
+        muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" },
+        accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
+        popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
+        card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
+      },
+      borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },
+    },
+  },
+  plugins: [],
+}
+""")
+    (project_dir / "postcss.config.js").write_text("""module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+""")
+    # Add Tailwind deps to package.json
+    pkg = json.loads((project_dir / "package.json").read_text())
+    pkg["devDependencies"]["tailwindcss"] = "^3.4.17"
+    pkg["devDependencies"]["postcss"] = "^8.4.49"
+    pkg["devDependencies"]["autoprefixer"] = "^10.4.20"
+    (project_dir / "package.json").write_text(json.dumps(pkg, indent=2))
 
     # Components via template
-    from websiteapp_template import add_to_project
-    add_to_project(str(project_dir), spec)
+    try:
+        sys.path.insert(0, str(TEMPLATES_DIR))
+        from websiteapp_template import add_to_project
+        add_to_project(str(project_dir), spec)
+    except Exception as e:
+        print(f"[WEBSITEAPP] AVISO: Template parcialmente aplicado ({e})")
 
     print(f"[WEBSITEAPP] Projeto criado: {project_dir}")
     return project_dir
@@ -196,16 +255,104 @@ def update_manifest(spec, project_dir):
     print(f"[WEBSITEAPP] Manifest atualizado: {slug}")
 
 
+def generate_from_prompt(prompt_text: str, no_install=False):
+    """Pipeline: Prompt -> Planner -> Builder -> Compiler -> Build"""
+    from agents.planner import plan as planner_plan
+    from agents.builder import build as builder_build
+    from agents.compiler import compile_ir
+
+    print("\n[1/4] PLANNER: Decompondo prompt em tarefas...")
+    plan_dict = planner_plan(prompt_text)
+    print(f"  Nome: {plan_dict.get('name')}")
+    print(f"  Tipo: {plan_dict.get('type')}")
+    print(f"  Tasks: {len(plan_dict.get('tasks', []))}")
+    print(f"  Páginas: {len(plan_dict.get('pages', []))}")
+    print(f"  Auth: {plan_dict.get('has_auth')}")
+    print(f"  DB: {plan_dict.get('has_database')}")
+
+    print("\n[2/4] BUILDER: Transformando plano em IR...")
+    ir = builder_build(plan_dict)
+    print(f"  Páginas no IR: {len(ir.pages)}")
+    print(f"  Entidades: {len(ir.entities)}")
+    for p in ir.pages:
+        print(f"    {p.route} ({p.layout}) — {len(p.sections)} seções")
+    for e in ir.entities:
+        print(f"    {e.name} ({len(e.fields)} campos)")
+
+    print("\n[3/4] COMPILER: Gerando código Next.js via templates...")
+    project_dir = compile_ir(ir)
+    project_path = Path(project_dir)
+
+    print("\n[4/4] Instalação e build...")
+    manifest_entry = {
+        "name": ir.name,
+        "slug": project_path.name,
+        "url": f"https://faohands-head.github.io/hands-head/previews/{project_path.name}/",
+        "status": "generated",
+        "created": str(time.strftime("%Y-%m-%d")),
+        "source": "prompt",
+        "description": ir.description,
+        "pages": [p.route for p in ir.pages],
+        "entities": [e.name for e in ir.entities],
+    }
+
+    if not no_install:
+        print("\n  Instalando dependencias...")
+        r = subprocess.run("npm install --legacy-peer-deps", cwd=project_dir, shell=True,
+                          capture_output=True, text=True, timeout=120)
+        if r.returncode == 0:
+            print("  npm install OK")
+            print("\n  Buildando...")
+            r2 = subprocess.run("npm run build", cwd=project_dir, shell=True,
+                               capture_output=True, text=True, timeout=120)
+            if r2.returncode == 0:
+                manifest_entry["status"] = "built"
+                out_dir = project_path / "out"
+                preview_dir = CAID_DIR / "previews" / project_path.name
+                if out_dir.exists():
+                    shutil.copytree(out_dir, preview_dir, dirs_exist_ok=True)
+                    print(f"  Build disponivel em: {preview_dir}")
+            else:
+                print(f"  Build AVISO: {r2.stderr[:300]}")
+        else:
+            print(f"  npm install AVISO: {r.stderr[:300]}")
+
+    update_manifest_raw(manifest_entry)
+    print(f"\n  Projeto: {project_dir}")
+    print(f"  Preview: http://localhost:3001")
+    print(f"  Comando: cd {project_dir} && npm run dev")
+    return project_dir
+
+
+def update_manifest_raw(entry: dict):
+    """Adiciona entrada ao manifest projects.json"""
+    manifest_path = CAID_DIR / "projects" / "projects.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text())
+    else:
+        manifest = {"projects": []}
+    slug = entry.get("slug")
+    manifest["projects"] = [p for p in manifest["projects"] if p.get("slug") != slug]
+    manifest["projects"].append(entry)
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
+    print(f"  Manifest atualizado: {slug}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="FAO HANDS - WebsiteApp Generator")
     parser.add_argument("--url", help="URL do site do cliente")
     parser.add_argument("--from-brain", help="Nome do briefing no Obsidian (vault/briefings/)")
+    parser.add_argument("--prompt", help="Gera app via prompt natural (Mini-Base44)")
     parser.add_argument("--no-install", action="store_true", help="Pula npm install")
     args = parser.parse_args()
 
+    if args.prompt:
+        generate_from_prompt(args.prompt, args.no_install)
+        return
+
     if not args.url and not args.from_brain:
         parser.print_help()
-        print("\nInforme --url ou --from-brain")
+        print("\nInforme --url, --from-brain ou --prompt")
         sys.exit(1)
 
     print("=" * 50)
@@ -219,6 +366,15 @@ def main():
         print(f"\nURL: {args.url}")
         s = SiteScraper(args.url)
         spec = s.scrape_all()
+        if spec:
+            spec["nav_items"] = [
+                {"icon": "Home", "label": "Inicio", "route": "/"},
+                {"icon": "Briefcase", "label": "Servicos", "route": "/servicos"},
+                {"icon": "CreditCard", "label": "Planos", "route": "/planos"},
+                {"icon": "Headphones", "label": "Suporte", "route": "/suporte"},
+                {"icon": "User", "label": "Conta", "route": "/conta"},
+            ]
+            spec.setdefault("client", args.url.replace("https://", "").split("/")[0].split(".")[0].title())
         if not spec:
             print("[WEBSITEAPP] ERRO: Nao foi possivel extrair o site")
             sys.exit(1)
@@ -283,7 +439,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [],
 }
 export default config
 """

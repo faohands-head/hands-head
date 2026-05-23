@@ -7,8 +7,8 @@ from pathlib import Path
 from datetime import datetime
 
 VAULT = Path(__file__).resolve().parent.parent / "vault"
-OBSIDIAN_API = "http://localhost:27123"
-API_KEY = "fao-hands-brain-key-2026"
+OBSIDIAN_API = os.environ.get("OBSIDIAN_API_URL", "http://localhost:27123")
+API_KEY = os.environ.get("OBSIDIAN_API_KEY", "")
 
 class Brain:
     def __init__(self):
@@ -21,7 +21,8 @@ class Brain:
             try:
                 import requests
                 self._api = requests.Session()
-                self._api.headers.update({"x-api-key": API_KEY})
+                if API_KEY:
+                    self._api.headers.update({"Authorization": f"Bearer {API_KEY}", "x-api-key": API_KEY})
                 self._api.get(f"{OBSIDIAN_API}/vault/", timeout=2)
             except:
                 self._api = False

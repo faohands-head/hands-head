@@ -1,21 +1,62 @@
 {
+  "golden_client": "websiteapp-acessosvipclientes-com-br-56722640",
   "projects": [
     {
       "name": "Acessos VIP Clientes",
       "slug": "websiteapp-acessosvipclientes-com-br-56722640",
       "url": "https://faohands-head.github.io/hands-head/projects/websiteapp-acessosvipclientes-com-br-56722640/out/",
       "status": "built",
+      "tier": "golden",
       "created": "2026-05-22",
       "source": "briefing",
       "briefing": "acessosvip-websiteapp.md"
+    },
+    {
+      "name": "Acessos VIP Clientes (CAID)",
+      "slug": "websiteapp-acessos-vip-clientes-5efde233",
+      "url": "",
+      "status": "wip",
+      "tier": "development",
+      "created": "2026-05-22",
+      "source": "caid",
+      "briefing": "acessosvip-websiteapp.md",
+      "notes": "Sprint CAID — consolidar em golden após Etapa 1"
     },
     {
       "name": "Quotes to Scrape",
       "slug": "websiteapp-quotes-toscrape-com-ed7b35a3",
       "url": "https://faohands-head.github.io/hands-head/previews/websiteapp-quotes-toscrape-com-ed7b35a3/",
       "status": "built",
+      "tier": "fixture",
       "created": "2026-05-22",
       "source": "scraper"
+    },
+    {
+      "name": "Fatal Model (fixture)",
+      "slug": "websiteapp-fatalmodel-com-31bf86c2",
+      "url": "https://faohands-head.github.io/hands-head/previews/websiteapp-fatalmodel-com-31bf86c2/",
+      "status": "built",
+      "tier": "fixture",
+      "created": "2026-05-23",
+      "source": "scraper"
+    },
+    {
+      "name": "landing-page-startup",
+      "slug": "app-landing-page-startup-6ba6ee21",
+      "url": "https://faohands-head.github.io/hands-head/previews/app-landing-page-startup-6ba6ee21/",
+      "status": "generated",
+      "tier": "demo",
+      "created": "2026-05-22",
+      "source": "prompt"
+    },
+    {
+      "name": "test-app",
+      "slug": "app-test-app-81d07968",
+      "url": "",
+      "status": "generated",
+      "tier": "demo",
+      "created": "2026-05-22",
+      "source": "prompt"
     }
   ]
 }

@@ -28,10 +28,10 @@ class SiteScraper:
         if len(html) < 500:
             return True
         lower = html.lower()
-        keywords = ["403", "access denied", "cloudflare", "cf-ray", "please complete the security check",
-                     "just a moment", "checking your browser", "ddos protection", "you have been blocked",
-                     "attention required", "enable javascript"]
-        return any(k in lower for k in keywords)
+        hard_block = ["please complete the security check", "checking your browser",
+                      "you have been blocked", "attention required", "just a moment"]
+        score = sum(1 for k in hard_block if k in lower)
+        return score >= 2 and len(html) < 50000
 
     def fetch(self):
         self.blocked = False

@@ -8,6 +8,8 @@ Thumbs.db
 Fao Head/
 .vault/
 out/
+.cache/
+projects/_archive/
 
 # Obsidian machine-specific
 vault/.obsidian/workspace.json
