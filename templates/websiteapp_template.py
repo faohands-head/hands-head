@@ -57,12 +57,19 @@ def add_to_project(project_dir: str, spec: dict):
     primary_hsl = _hex_to_hsl(primary_color)
     _write_file(p, "src/app/globals.css", _GLOBALS_CSS_T.replace("__PRIMARY__", primary_hsl).replace("__RING__", primary_hsl))
 
-    # Categorize and structure content
-    content_data = _categorize_texts(texts, sections_raw, client, animations)
+    sections_by_route = spec.get("_sections_by_route")
+
+    if sections_by_route:
+        content_data = None
+    else:
+        content_data = _categorize_texts(texts, sections_raw, client, animations)
 
     # Generate each route page
     for route, label in routes.items():
-        page_content = _build_page_for_route(route, label, content_data, client, project_name)
+        if sections_by_route and route in sections_by_route:
+            page_content = sections_by_route[route]
+        else:
+            page_content = _build_page_for_route(route, label, content_data, client, project_name)
         if route == "/":
             page_dir = p / "src/app"
         else:
@@ -244,6 +251,11 @@ def _build_page_for_route(route, label, content_data, client, project_name):
 
     sections.append({"type": "footer", "text": f"(c) 2026 {client}. Todos os direitos reservados.", "className": ""})
     return sections
+
+
+# API pública para pipeline IR (Etapa 2)
+categorize_texts = _categorize_texts
+build_page_sections = _build_page_for_route
 
 
 def _full_text_blob_from_sections(sections: list) -> str:

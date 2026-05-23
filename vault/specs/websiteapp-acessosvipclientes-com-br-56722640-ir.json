@@ -1,0 +1,408 @@
+{
+  "name": "WebsiteApp Acessos VIP Clientes",
+  "description": "WebsiteApp: Acessosvip Websiteapp",
+  "pages": [
+    {
+      "route": "/",
+      "title": "Inicio",
+      "layout": "app_shell",
+      "sections": []
+    },
+    {
+      "route": "/servicos",
+      "title": "Servicos",
+      "layout": "app_shell",
+      "sections": []
+    },
+    {
+      "route": "/planos",
+      "title": "Planos",
+      "layout": "app_shell",
+      "sections": []
+    },
+    {
+      "route": "/suporte",
+      "title": "Suporte",
+      "layout": "app_shell",
+      "sections": []
+    },
+    {
+      "route": "/conta",
+      "title": "Conta",
+      "layout": "app_shell",
+      "sections": []
+    }
+  ],
+  "entities": [],
+  "datasource": {
+    "type": "static",
+    "config": {}
+  },
+  "auth": {
+    "provider": "none",
+    "pages": [
+      "/login",
+      "/register"
+    ],
+    "entities": []
+  },
+  "theme": {
+    "primary": "#3b82f6",
+    "radius": "0.5rem"
+  },
+  "ir_version": "1.0.0",
+  "app_type": "websiteapp",
+  "url": "https://acessosvipclientes.com.br/",
+  "client": "Acessos VIP Clientes",
+  "navigation": [
+    {
+      "icon": "Home",
+      "label": "Inicio",
+      "route": "/"
+    },
+    {
+      "icon": "Briefcase",
+      "label": "Servicos",
+      "route": "/servicos"
+    },
+    {
+      "icon": "CreditCard",
+      "label": "Planos",
+      "route": "/planos"
+    },
+    {
+      "icon": "Headphones",
+      "label": "Suporte",
+      "route": "/suporte"
+    },
+    {
+      "icon": "User",
+      "label": "Conta",
+      "route": "/conta"
+    }
+  ],
+  "source_texts": [
+    "Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de clientes.",
+    "Gestão de acessos VIP",
+    "Controle de entrada e saída",
+    "Relatórios personalizados",
+    "Integração com sistemas terceiros",
+    "Suporte 24 horas",
+    "Plano Básico: Acesso simples com relatórios mensais",
+    "Plano Profissional: Gestão completa + integrações",
+    "Plano Enterprise: Tudo do Profissional + suporte dedicado + SLA",
+    "Bem-vindo à Acessos VIP Clientes. Sua solução completa em gestão de acessos.",
+    "Oferecemos tecnologia de ponta para controle de entrada e saída.",
+    "Nossos sistemas são integrados com as principais plataformas do mercado.",
+    "Mais de 500 empresas confiam na Acessos VIP Clientes.",
+    "Suporte técnico especializado disponível 24 horas por dia.",
+    "Solicite uma demonstração gratuita e descubra como podemos ajudar.",
+    "Transforme a gestão de acessos da sua empresa com a Acessos VIP Clientes."
+  ],
+  "websiteapp_sections": {
+    "/": [
+      {
+        "type": "hero",
+        "title": "Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de clientes.",
+        "text": "Gestão de acessos VIP",
+        "className": "bg-gradient-to-br from-primary/5 via-background to-background"
+      },
+      {
+        "type": "cards",
+        "items": [
+          {
+            "title": "Acessos VIP Clientes é uma empresa que oferece sol",
+            "text": "Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de clientes."
+          },
+          {
+            "title": "Gestão de acessos VIP",
+            "text": "Gestão de acessos VIP"
+          },
+          {
+            "title": "Controle de entrada e saída",
+            "text": "Controle de entrada e saída"
+          },
+          {
+            "title": "Relatórios personalizados",
+            "text": "Relatórios personalizados"
+          }
+        ],
+        "className": ""
+      },
+      {
+        "type": "cta",
+        "title": "Solicite uma demonstração gratuita e descubra como podemos a",
+        "text": "Solicite uma demonstração gratuita e descubra como podemos ajudar.",
+        "button_label": "Saiba Mais",
+        "button_url": "#contato",
+        "className": "bg-muted/30"
+      },
+      {
+        "type": "content",
+        "paragraphs": [
+          "Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de clientes.",
+          "Gestão de acessos VIP",
+          "Controle de entrada e saída",
+          "Relatórios personalizados",
+          "Integração com sistemas terceiros",
+          "Suporte 24 horas",
+          "Bem-vindo à Acessos VIP Clientes. Sua solução completa em gestão de acessos.",
+          "Oferecemos tecnologia de ponta para controle de entrada e saída.",
+          "Nossos sistemas são integrados com as principais plataformas do mercado.",
+          "Mais de 500 empresas confiam na Acessos VIP Clientes.",
+          "Suporte técnico especializado disponível 24 horas por dia.",
+          "Transforme a gestão de acessos da sua empresa com a Acessos VIP Clientes.",
+          "Solicite uma demonstração gratuita e descubra como podemos ajudar.",
+          "Plano Básico: Acesso simples com relatórios mensais",
+          "Plano Profissional: Gestão completa + integrações",
+          "Plano Enterprise: Tudo do Profissional + suporte dedicado + SLA"
+        ],
+        "className": ""
+      },
+      {
+        "type": "footer",
+        "text": "(c) 2026 Acessos VIP Clientes. Todos os direitos reservados.",
+        "className": ""
+      }
+    ],
+    "/servicos": [
+      {
+        "type": "hero",
+        "title": "Nossos Servicos",
+        "text": "Conheca tudo o que oferecemos",
+        "className": ""
+      },
+      {
+        "type": "cards",
+        "items": [
+          {
+            "title": "Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de cl",
+            "text": "Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de clientes."
+          },
+          {
+            "title": "Gestão de acessos VIP",
+            "text": "Gestão de acessos VIP"
+          },
+          {
+            "title": "Controle de entrada e saída",
+            "text": "Controle de entrada e saída"
+          },
+          {
+            "title": "Relatórios personalizados",
+            "text": "Relatórios personalizados"
+          },
+          {
+            "title": "Integração com sistemas terceiros",
+            "text": "Integração com sistemas terceiros"
+          },
+          {
+            "title": "Suporte 24 horas",
+            "text": "Suporte 24 horas"
+          },
+          {
+            "title": "Bem-vindo à Acessos VIP Clientes. Sua solução completa em gestão de acessos.",
+            "text": "Bem-vindo à Acessos VIP Clientes. Sua solução completa em gestão de acessos."
+          },
+          {
+            "title": "Oferecemos tecnologia de ponta para controle de entrada e saída.",
+            "text": "Oferecemos tecnologia de ponta para controle de entrada e saída."
+          },
+          {
+            "title": "Plano Básico: Acesso simples com relatórios mensais",
+            "text": "Plano Básico: Acesso simples com relatórios mensais"
+          },
+          {
+            "title": "Plano Profissional: Gestão completa + integrações",
+            "text": "Plano Profissional: Gestão completa + integrações"
+          },
+          {
+            "title": "Plano Enterprise: Tudo do Profissional + suporte dedicado + SLA",
+            "text": "Plano Enterprise: Tudo do Profissional + suporte dedicado + SLA"
+          }
+        ],
+        "className": ""
+      },
+      {
+        "type": "content",
+        "paragraphs": [
+          "Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de clientes.",
+          "Gestão de acessos VIP",
+          "Controle de entrada e saída",
+          "Relatórios personalizados",
+          "Integração com sistemas terceiros",
+          "Suporte 24 horas",
+          "Bem-vindo à Acessos VIP Clientes. Sua solução completa em gestão de acessos.",
+          "Oferecemos tecnologia de ponta para controle de entrada e saída.",
+          "Nossos sistemas são integrados com as principais plataformas do mercado.",
+          "Mais de 500 empresas confiam na Acessos VIP Clientes.",
+          "Suporte técnico especializado disponível 24 horas por dia.",
+          "Transforme a gestão de acessos da sua empresa com a Acessos VIP Clientes.",
+          "Solicite uma demonstração gratuita e descubra como podemos ajudar.",
+          "Plano Básico: Acesso simples com relatórios mensais",
+          "Plano Profissional: Gestão completa + integrações",
+          "Plano Enterprise: Tudo do Profissional + suporte dedicado + SLA"
+        ],
+        "className": ""
+      },
+      {
+        "type": "footer",
+        "text": "(c) 2026 Acessos VIP Clientes. Todos os direitos reservados.",
+        "className": ""
+      }
+    ],
+    "/planos": [
+      {
+        "type": "hero",
+        "title": "Planos e Precos",
+        "text": "Escolha o plano ideal para voce",
+        "className": ""
+      },
+      {
+        "type": "pricing",
+        "plans": [
+          {
+            "name": "Plano Básico",
+            "price": "Sob consulta",
+            "features": [
+              "Plano Básico: Acesso simples com relatórios mensais"
+            ],
+            "cta": "Contratar"
+          },
+          {
+            "name": "Plano Profissional",
+            "price": "Sob consulta",
+            "features": [
+              "Plano Profissional: Gestão completa + integrações"
+            ],
+            "cta": "Contratar"
+          },
+          {
+            "name": "Plano Enterprise",
+            "price": "Sob consulta",
+            "features": [
+              "Plano Enterprise: Tudo do Profissional + suporte dedicado + SLA"
+            ],
+            "cta": "Contratar"
+          }
+        ],
+        "className": ""
+      },
+      {
+        "type": "content",
+        "paragraphs": [
+          "Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de clientes.",
+          "Gestão de acessos VIP",
+          "Controle de entrada e saída",
+          "Relatórios personalizados",
+          "Integração com sistemas terceiros",
+          "Suporte 24 horas",
+          "Bem-vindo à Acessos VIP Clientes. Sua solução completa em gestão de acessos.",
+          "Oferecemos tecnologia de ponta para controle de entrada e saída.",
+          "Nossos sistemas são integrados com as principais plataformas do mercado.",
+          "Mais de 500 empresas confiam na Acessos VIP Clientes.",
+          "Suporte técnico especializado disponível 24 horas por dia.",
+          "Transforme a gestão de acessos da sua empresa com a Acessos VIP Clientes.",
+          "Solicite uma demonstração gratuita e descubra como podemos ajudar.",
+          "Plano Básico: Acesso simples com relatórios mensais",
+          "Plano Profissional: Gestão completa + integrações"
+        ],
+        "className": ""
+      },
+      {
+        "type": "footer",
+        "text": "(c) 2026 Acessos VIP Clientes. Todos os direitos reservados.",
+        "className": ""
+      }
+    ],
+    "/suporte": [
+      {
+        "type": "hero",
+        "title": "Fale Conosco",
+        "text": "Estamos aqui para ajudar",
+        "className": ""
+      },
+      {
+        "type": "form",
+        "fields": [
+          {
+            "name": "nome",
+            "type": "text",
+            "label": "Nome",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "email",
+            "label": "E-mail",
+            "required": true
+          },
+          {
+            "name": "mensagem",
+            "type": "textarea",
+            "label": "Mensagem",
+            "required": true
+          }
+        ],
+        "submit_label": "Enviar Mensagem",
+        "className": "max-w-lg mx-auto"
+      },
+      {
+        "type": "content",
+        "paragraphs": [
+          "Solicite uma demonstração gratuita e descubra como podemos ajudar.",
+          "Acessos VIP Clientes é uma empresa que oferece soluções de acesso e gestão de clientes.",
+          "Gestão de acessos VIP",
+          "Controle de entrada e saída",
+          "Relatórios personalizados",
+          "Integração com sistemas terceiros",
+          "Suporte 24 horas",
+          "Bem-vindo à Acessos VIP Clientes. Sua solução completa em gestão de acessos.",
+          "Oferecemos tecnologia de ponta para controle de entrada e saída.",
+          "Nossos sistemas são integrados com as principais plataformas do mercado.",
+          "Mais de 500 empresas confiam na Acessos VIP Clientes."
+        ],
+        "className": ""
+      },
+      {
+        "type": "footer",
+        "text": "(c) 2026 Acessos VIP Clientes. Todos os direitos reservados.",
+        "className": ""
+      }
+    ],
+    "/conta": [
+      {
+        "type": "hero",
+        "title": "Minha Conta",
+        "text": "Gerencie seu perfil e preferencias",
+        "className": ""
+      },
+      {
+        "type": "form",
+        "fields": [
+          {
+            "name": "nome",
+            "type": "text",
+            "label": "Nome"
+          },
+          {
+            "name": "email",
+            "type": "email",
+            "label": "E-mail"
+          },
+          {
+            "name": "telefone",
+            "type": "tel",
+            "label": "Telefone"
+          }
+        ],
+        "submit_label": "Atualizar Cadastro",
+        "className": "max-w-lg mx-auto"
+      },
+      {
+        "type": "footer",
+        "text": "(c) 2026 Acessos VIP Clientes. Todos os direitos reservados.",
+        "className": ""
+      }
+    ]
+  }
+}

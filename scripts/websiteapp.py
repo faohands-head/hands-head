@@ -23,6 +23,14 @@ sys.path.insert(0, str(TEMPLATES_DIR))
 
 from website_scraper import SiteScraper
 from brain import Brain
+from agents.websiteapp_ir import (
+    run_pipeline,
+    is_websiteapp_plan,
+    plan_from_prompt_plan,
+    build_plan_from_spec,
+    save_ir,
+    ir_slug_from_spec,
+)
 
 BRIEFING_BY_DOMAIN = {
     "acessosvipclientes.com.br": "acessosvip-websiteapp.md",
@@ -262,12 +270,14 @@ def save_obsidian(spec, project_dir):
     pname = spec.get("project_name", "WebsiteApp")
     texts = spec.get("extracted", {}).get("texts", [])
 
+    ir_path = spec.get("_ir_saved", spec.get("_ir_path", "N/A"))
     report = f"""---
 tipo: report
 operacao: websiteapp
 cliente: {client}
 url: {spec.get('url', '')}
 status: gerado
+ir_version: {spec.get('ir_version', '1.0.0')}
 created: {today}
 ---
 
@@ -276,6 +286,7 @@ created: {today}
 ## Origem
 - URL: {spec.get('url', 'N/A')}
 - Briefing: {spec.get('_briefing', 'N/A')}
+- IR: `{ir_path}`
 
 ## Extracao
 - Textos extraidos: {len(texts)}
@@ -321,23 +332,50 @@ def update_manifest(spec, project_dir):
     print(f"[WEBSITEAPP] Manifest atualizado: {slug}")
 
 
-def generate_from_prompt(prompt_text: str, no_install=False):
-    """Pipeline: Prompt -> Planner -> Builder -> Compiler -> Build"""
+def generate_from_prompt(prompt_text: str, no_install=False, out_dir: str | None = None, strict: bool = False):
+    """Pipeline: Prompt -> Planner -> Builder -> Compiler | WebsiteApp IR"""
     from agents.planner import plan as planner_plan
     from agents.builder import build as builder_build
     from agents.compiler import compile_ir
 
-    print("\n[1/4] PLANNER: Decompondo prompt em tarefas...")
+    print("\n[1/4] PLANNER (Intent): Decompondo prompt...")
     plan_dict = planner_plan(prompt_text)
     print(f"  Nome: {plan_dict.get('name')}")
     print(f"  Tipo: {plan_dict.get('type')}")
     print(f"  Tasks: {len(plan_dict.get('tasks', []))}")
-    print(f"  Páginas: {len(plan_dict.get('pages', []))}")
+    print(f"  Paginas: {len(plan_dict.get('pages', []))}")
     print(f"  Auth: {plan_dict.get('has_auth')}")
     print(f"  DB: {plan_dict.get('has_database')}")
 
-    print("\n[2/4] BUILDER: Transformando plano em IR...")
+    if is_websiteapp_plan(plan_dict):
+        print("\n[2-4/4] WEBSITEAPP IR: Plan -> Structure -> Render (sem LLM builder)")
+        wp = plan_from_prompt_plan(plan_dict, prompt_text)
+        spec = {
+            "project_name": wp["name"],
+            "client": wp["client"],
+            "goal": wp["description"],
+            "extracted": {"texts": wp["content_texts"], "colors": [], "fonts": [], "animations": [], "sections": []},
+            "nav_items": wp["nav_items"],
+            "struct": {"source": "prompt"},
+        }
+        ir, ir_path = run_pipeline(spec, out_dir=out_dir)
+        project_dir = generate_project(spec, out_dir=out_dir)
+        if strict:
+            from validate_preservation import measure
+            r = measure("", Path(project_dir), source_texts=ir.source_texts)
+            print(f"\n[WEBSITEAPP] Preservacao: {r['percent']}%")
+            if r["percent"] < 95.0:
+                sys.exit(1)
+        if not no_install:
+            install_and_preview(project_dir)
+        update_manifest(spec, project_dir)
+        save_obsidian(spec, project_dir)
+        return project_dir
+
+    print("\n[2/4] BUILDER (Structure): Transformando plano em IR...")
     ir = builder_build(plan_dict)
+    slug = ir_slug_from_spec({"client": plan_dict.get("name", "app")})
+    save_ir(ir, slug)
     print(f"  Páginas no IR: {len(ir.pages)}")
     print(f"  Entidades: {len(ir.entities)}")
     for p in ir.pages:
@@ -415,7 +453,7 @@ def main():
     args = parser.parse_args()
 
     if args.prompt:
-        generate_from_prompt(args.prompt, args.no_install)
+        generate_from_prompt(args.prompt, args.no_install, out_dir=args.out_dir, strict=args.strict)
         return
 
     if not args.url and not args.from_brain:
@@ -467,7 +505,11 @@ def main():
     texts_n = len(spec.get("extracted", {}).get("texts", []))
     print(f"\n[WEBSITEAPP] Textos para geracao: {texts_n}")
 
-    print("\n--- Gerando Projeto ---")
+    print("\n--- IR Pipeline (v1.0.0) ---")
+    ir, ir_path = run_pipeline(spec, out_dir=args.out_dir)
+    print(f"[IR] {len(ir.source_texts)} textos | {len(ir.websiteapp_sections)} rotas | {ir_path.name}")
+
+    print("\n--- Gerando Projeto (via IR) ---")
     project_dir = generate_project(spec, out_dir=args.out_dir)
 
     if args.strict:

@@ -56,6 +56,15 @@ class Auth:
     entities: list[str] = field(default_factory=list)
 
 
+DEFAULT_NAV = [
+    {"icon": "Home", "label": "Inicio", "route": "/"},
+    {"icon": "Briefcase", "label": "Servicos", "route": "/servicos"},
+    {"icon": "CreditCard", "label": "Planos", "route": "/planos"},
+    {"icon": "Headphones", "label": "Suporte", "route": "/suporte"},
+    {"icon": "User", "label": "Conta", "route": "/conta"},
+]
+
+
 @dataclass
 class AppIR:
     name: str = "App"
@@ -65,6 +74,14 @@ class AppIR:
     datasource: DataSource = field(default_factory=DataSource)
     auth: Auth = field(default_factory=Auth)
     theme: dict = field(default_factory=lambda: {"primary": "#3b82f6", "radius": "0.5rem"})
+    # WebsiteApp / FAO HANDS extensions (IR v1.0.0)
+    ir_version: str = "1.0.0"
+    app_type: str = "websiteapp"
+    url: str = ""
+    client: str = ""
+    navigation: list = field(default_factory=list)
+    source_texts: list = field(default_factory=list)
+    websiteapp_sections: dict = field(default_factory=dict)
 
     def to_dict(self):
         return asdict(self)
@@ -105,5 +122,12 @@ class AppIR:
             entities=[_dict_to_entity(e) for e in d.get("entities", [])],
             datasource=DataSource(**d.get("datasource", {"type": "static"})),
             auth=Auth(**{k: v for k, v in d.get("auth", {}).items() if k in Auth.__dataclass_fields__}),
-            theme={**{"primary": "#3b82f6", "radius": "0.5rem"}, **d.get("theme", {})}
+            theme={**{"primary": "#3b82f6", "radius": "0.5rem"}, **d.get("theme", {})},
+            ir_version=d.get("ir_version", "1.0.0"),
+            app_type=d.get("app_type", "websiteapp"),
+            url=d.get("url", ""),
+            client=d.get("client", ""),
+            navigation=d.get("navigation", list(DEFAULT_NAV)),
+            source_texts=d.get("source_texts", []),
+            websiteapp_sections=d.get("websiteapp_sections", {}),
         )
