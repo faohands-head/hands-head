@@ -24,8 +24,44 @@ sys.path.insert(0, str(TEMPLATES_DIR))
 from website_scraper import SiteScraper
 from brain import Brain
 
+BRIEFING_BY_DOMAIN = {
+    "acessosvipclientes.com.br": "acessosvip-websiteapp.md",
+}
 
-def load_briefing(filename: str) -> dict:
+
+def _merge_texts_into_spec(spec: dict, extra_texts: list[str]) -> dict:
+    """Une textos ao spec sem duplicar (briefing + scrape)."""
+    extracted = spec.setdefault("extracted", {})
+    current = extracted.get("texts", [])
+    seen = {t.strip().lower() for t in current if t and t.strip()}
+    merged = list(current)
+    for t in extra_texts:
+        t = (t or "").strip()
+        if not t or len(t) < 4:
+            continue
+        key = t.lower()
+        if key not in seen:
+            seen.add(key)
+            merged.append(t)
+    extracted["texts"] = merged
+    spec["extracted"] = extracted
+    return spec
+
+
+def _briefing_lines_from_content(content: str) -> list[str]:
+    lines = []
+    for line in content.split("\n"):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("-"):
+            lines.append(line.lstrip("- ").strip())
+        elif ":" not in line or line.startswith("http"):
+            lines.append(line)
+    return lines
+
+
+def load_briefing(filename: str, merge_url: bool = True) -> dict:
     """Carrega briefing do Obsidian vault"""
     brain = Brain()
     content = brain.read(f"briefings/{filename}")
@@ -44,9 +80,7 @@ def load_briefing(filename: str) -> dict:
                     spec[k.strip()] = v.strip()
             content = parts[2]
 
-    # Extract first meaningful lines as texts
-    lines = [l.strip() for l in content.split("\n") if l.strip() and not l.startswith("#") and not l.startswith("-")]
-    # Extract URL if present
+    lines = _briefing_lines_from_content(content)
     for line in content.split("\n"):
         if "https://" in line:
             url_match = [w for w in line.split() if w.startswith("https://")]
@@ -56,8 +90,25 @@ def load_briefing(filename: str) -> dict:
 
     spec["goal"] = f"WebsiteApp: {spec.get('title', '')}"
     spec["project_name"] = f"WebsiteApp {spec.get('cliente', spec.get('title', ''))}"
-    spec["extracted"] = {"texts": lines[:50], "colors": [], "fonts": [], "animations": [], "animations_raw": {}, "sections": []}
-    spec["struct"] = {"text_count": len(lines)}
+    spec["client"] = spec.get("cliente", spec.get("client", "Cliente"))
+    spec["extracted"] = {"texts": lines, "colors": [], "fonts": [], "animations": [], "animations_raw": {}, "sections": []}
+    spec["struct"] = {"text_count": len(lines), "source": "briefing"}
+    spec["_briefing"] = filename
+
+    if merge_url and spec.get("url"):
+        print(f"[WEBSITEAPP] Mesclando scrape de {spec['url']}...")
+        scraper = SiteScraper(spec["url"])
+        scraped = scraper.scrape_all()
+        if scraped and not scraped.get("blocked"):
+            scrape_texts = scraped.get("extracted", {}).get("texts", [])
+            if scraped.get("hosting_placeholder"):
+                print("[WEBSITEAPP] Scrape ignorado (placeholder hospedagem); briefing prevalece.")
+            else:
+                _merge_texts_into_spec(spec, scrape_texts)
+                for k in ("colors", "fonts", "animations", "animations_raw", "sections"):
+                    if scraped.get("extracted", {}).get(k):
+                        spec["extracted"][k] = scraped["extracted"][k]
+                spec["struct"]["scrape_method"] = scraped.get("struct", {}).get("method")
     spec["nav_items"] = [
         {"icon": "Home", "label": "Inicio", "route": "/"},
         {"icon": "Briefcase", "label": "Servicos", "route": "/servicos"},
@@ -69,12 +120,27 @@ def load_briefing(filename: str) -> dict:
     return spec
 
 
-def generate_project(spec):
+def generate_project(spec, out_dir: str | None = None):
     """Gera o projeto Next.js com template websiteapp"""
-    domain = spec.get("domain", spec.get("url", "cliente").replace("https://", "").split("/")[0])
-    project_id = f"websiteapp-{domain.replace('.', '-')}-{uuid.uuid4().hex[:8]}"
-    project_dir = PROJECTS_DIR / project_id
-    project_dir.mkdir(parents=True, exist_ok=True)
+    if out_dir:
+        rel = Path(out_dir)
+        if rel.is_absolute():
+            project_dir = rel
+        else:
+            parts = rel.parts
+            if parts and parts[0].lower() == "projects":
+                rel = Path(*parts[1:])
+            project_dir = PROJECTS_DIR / rel
+        project_dir.mkdir(parents=True, exist_ok=True)
+        for sub in ("src", "public"):
+            sub_path = project_dir / sub
+            if sub_path.exists():
+                shutil.rmtree(sub_path)
+    else:
+        domain = spec.get("domain", spec.get("url", "cliente").replace("https://", "").split("/")[0])
+        project_id = f"websiteapp-{domain.replace('.', '-')}-{uuid.uuid4().hex[:8]}"
+        project_dir = PROJECTS_DIR / project_id
+        project_dir.mkdir(parents=True, exist_ok=True)
     project_name = spec.get("project_name", "WebsiteApp")
 
     # Package.json
@@ -344,6 +410,8 @@ def main():
     parser.add_argument("--from-brain", help="Nome do briefing no Obsidian (vault/briefings/)")
     parser.add_argument("--prompt", help="Gera app via prompt natural (Mini-Base44)")
     parser.add_argument("--no-install", action="store_true", help="Pula npm install")
+    parser.add_argument("--out-dir", help="Regenerar em pasta existente (ex: projects/websiteapp-...)")
+    parser.add_argument("--strict", action="store_true", help="Falha se preservacao < 95%% apos gerar")
     args = parser.parse_args()
 
     if args.prompt:
@@ -361,11 +429,20 @@ def main():
 
     if args.from_brain:
         spec = load_briefing(args.from_brain)
-        spec["_briefing"] = args.from_brain
     else:
         print(f"\nURL: {args.url}")
         s = SiteScraper(args.url)
         spec = s.scrape_all()
+        domain = args.url.replace("https://", "").split("/")[0].lower()
+        if spec and (spec.get("hosting_placeholder") or len(spec.get("extracted", {}).get("texts", [])) < 5):
+            brief = BRIEFING_BY_DOMAIN.get(domain)
+            if brief:
+                print(f"[WEBSITEAPP] Mesclando briefing automatico: {brief}")
+                brain_spec = load_briefing(brief, merge_url=False)
+                _merge_texts_into_spec(spec, brain_spec.get("extracted", {}).get("texts", []))
+                spec["client"] = brain_spec.get("client", spec.get("client"))
+                spec["project_name"] = brain_spec.get("project_name", spec.get("project_name"))
+                spec["_briefing"] = brief
         if spec:
             spec["nav_items"] = [
                 {"icon": "Home", "label": "Inicio", "route": "/"},
@@ -374,7 +451,7 @@ def main():
                 {"icon": "Headphones", "label": "Suporte", "route": "/suporte"},
                 {"icon": "User", "label": "Conta", "route": "/conta"},
             ]
-            spec.setdefault("client", args.url.replace("https://", "").split("/")[0].split(".")[0].title())
+            spec.setdefault("client", spec.get("cliente", domain.split(".")[0].title()))
         if not spec:
             print("[WEBSITEAPP] ERRO: Nao foi possivel extrair o site")
             sys.exit(1)
@@ -387,8 +464,19 @@ def main():
                 print("[WEBSITEAPP] Abortado. Crie um briefing no Obsidian e use --from-brain.")
                 sys.exit(0)
 
+    texts_n = len(spec.get("extracted", {}).get("texts", []))
+    print(f"\n[WEBSITEAPP] Textos para geracao: {texts_n}")
+
     print("\n--- Gerando Projeto ---")
-    project_dir = generate_project(spec)
+    project_dir = generate_project(spec, out_dir=args.out_dir)
+
+    if args.strict:
+        from validate_preservation import measure
+        r = measure(spec.get("url", ""), Path(project_dir), source_texts=spec.get("extracted", {}).get("texts", []))
+        print(f"\n[WEBSITEAPP] Preservacao: {r['percent']}% ({r['found']}/{r['total_texts']})")
+        if r["percent"] < 95.0:
+            print("[WEBSITEAPP] ERRO: preservacao abaixo de 95%. Ajuste briefing/template.")
+            sys.exit(1)
 
     if not args.no_install:
         print("\n--- Instalando Dependencias ---")

@@ -7,6 +7,29 @@ import re, json
 from urllib.parse import urljoin, urlparse
 from html.parser import HTMLParser
 
+HOSTING_PLACEHOLDER_MARKERS = (
+    "cpanel",
+    "gerenciador de arquivos",
+    "file manager",
+    "permissões de um arquivo",
+    "permissao de um arquivo",
+    "octal (base-8)",
+    "representação simbólica",
+    "editar as permissões",
+)
+
+NOISE_TEXT_FRAGMENTS = (
+    "permissão",
+    "permissao",
+    "octal",
+    "cpanel",
+    "gerenciador de arquivos",
+    "file manager",
+    "servidor como",
+    "via ftp",
+)
+
+
 class SiteScraper:
     def __init__(self, url):
         self.url = url
@@ -23,6 +46,25 @@ class SiteScraper:
         self.title = ""
         self.blocked = False
         self.method_used = ""
+        self.hosting_placeholder = False
+
+    def is_hosting_placeholder(self) -> bool:
+        if not self.html:
+            return False
+        lower = self.html.lower()
+        hits = sum(1 for m in HOSTING_PLACEHOLDER_MARKERS if m in lower)
+        return hits >= 2
+
+    def filter_noise_texts(self):
+        cleaned = []
+        for t in self.texts:
+            low = t.lower()
+            if any(n in low for n in NOISE_TEXT_FRAGMENTS):
+                continue
+            if len(t.strip()) < 4:
+                continue
+            cleaned.append(t.strip())
+        self.texts = list(dict.fromkeys(cleaned))
 
     def _is_blocked(self, html):
         if len(html) < 500:
@@ -228,7 +270,7 @@ class SiteScraper:
         return struct
 
     def to_spec(self):
-        texts = self.texts[:200] if not self.blocked else []
+        texts = self.texts[:500] if not self.blocked else []
         return {
             "url": self.url, "domain": self.domain,
             "title": self.title,
@@ -236,6 +278,7 @@ class SiteScraper:
             "goal": f"WebsiteApp baseado em {self.url}",
             "client": self.title or self.domain,
             "blocked": self.blocked,
+            "hosting_placeholder": self.hosting_placeholder,
             "extracted": {
                 "texts": texts,
                 "colors": sorted(self.colors)[:50],
@@ -260,6 +303,10 @@ class SiteScraper:
         print(f"[SCRAPER] Baixado: {len(self.html)} bytes via {self.method_used or 'N/A'}")
         self.extract_css()
         self.extract_texts()
+        self.hosting_placeholder = self.is_hosting_placeholder()
+        if self.hosting_placeholder:
+            print("[SCRAPER] AVISO: pagina parece placeholder de hospedagem (cPanel). Use briefing.")
+        self.filter_noise_texts()
         self.extract_sections()
         print(f"[SCRAPER] Textos: {len(self.texts)} | Cores: {len(self.colors)} | Animacoes: {len(self.animations)} | Secoes: {len(self.sections)}")
         return self.to_spec()

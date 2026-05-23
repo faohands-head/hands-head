@@ -106,38 +106,68 @@ def _deduplicate(texts):
 
 def _categorize_texts(texts, sections_raw, client, animations):
     texts = _deduplicate(texts)
-    categories = {"headlines": [], "features": [], "highlights": [], "long": [], "short": [], "cta": [], "stats": []}
+    categories = {
+        "headlines": [],
+        "features": [],
+        "highlights": [],
+        "long": [],
+        "short": [],
+        "cta": [],
+        "stats": [],
+        "all": [],
+    }
 
-    cta_keywords = ["comece", "saiba mais", "cadastre", "entre", "acesse", "assine", "compre", "contato", "whatsapp"]
-    stat_patterns = ["mil", "milh", "anos", "%", "numero", "mais de", "top", "r$"]
+    cta_keywords = ["comece", "saiba mais", "cadastre", "entre", "acesse", "assine", "compre", "contato", "whatsapp", "demonstracao", "demonstração"]
+    stat_patterns = ["mil", "milh", "anos", "%", "numero", "mais de", "top", "r$", "500"]
+    service_keywords = ["gestao", "gestão", "acesso", "integracao", "integração", "relatorio", "relatório", "suporte", "entrada", "saida", "saída"]
+    plan_keywords = ["plano", "basico", "básico", "profissional", "enterprise", "sla"]
 
     for t in texts:
         t_stripped = t.strip()
         lower = t_stripped.lower()
         if len(t_stripped) < 3:
             continue
-        if '"' in t_stripped or "'" in t_stripped:
-            categories["headlines"].append(t_stripped)
+        categories["all"].append(t_stripped)
+        if any(kw in lower for kw in plan_keywords):
+            categories["features"].append(t_stripped)
+        elif any(kw in lower for kw in service_keywords):
+            categories["highlights"].append(t_stripped)
         elif any(kw in lower for kw in cta_keywords):
             categories["cta"].append(t_stripped)
         elif any(kw in lower for kw in stat_patterns):
             categories["stats"].append(t_stripped)
         elif len(t_stripped) > 80:
             categories["long"].append(t_stripped)
-        elif len(t_stripped) > 40:
+        elif len(t_stripped) > 35:
             categories["highlights"].append(t_stripped)
         else:
             categories["short"].append(t_stripped)
 
+    if not categories["headlines"] and categories["all"]:
+        categories["headlines"] = categories["all"][:2]
+
     return categories
+
+
+def _content_paragraphs(content_data, max_items=40):
+    """Garante que a maior parte dos textos apareca em paragrafos."""
+    used = set()
+    pool = []
+    for key in ("long", "highlights", "short", "cta", "stats", "features", "all"):
+        for t in content_data.get(key, []):
+            k = t.strip().lower()
+            if k not in used:
+                used.add(k)
+                pool.append(t)
+    return pool[:max_items]
 
 
 def _build_page_for_route(route, label, content_data, client, project_name):
     sections = []
 
     if route == "/":
-        headline = content_data["headlines"][0] if content_data["headlines"] else f"Bem-vindo ao {client}"
-        subtitle = content_data["headlines"][1] if len(content_data["headlines"]) > 1 else ""
+        headline = content_data["all"][0] if content_data["all"] else f"Bem-vindo ao {client}"
+        subtitle = content_data["all"][1] if len(content_data["all"]) > 1 else ""
         sections.append({"type": "hero", "title": headline, "text": subtitle, "className": "bg-gradient-to-br from-primary/5 via-background to-background"})
 
         if content_data["stats"]:
@@ -162,34 +192,51 @@ def _build_page_for_route(route, label, content_data, client, project_name):
         elif content_data["headlines"]:
             sections.append({"type": "cta", "title": content_data["headlines"][0][:60], "text": content_data["headlines"][0], "button_label": "Saiba Mais", "button_url": "#contato", "className": "bg-muted/30"})
 
-        paragraphs = content_data["long"][:6] + content_data["highlights"][:3]
+        paragraphs = _content_paragraphs(content_data, max_items=30)
         if paragraphs:
             sections.append({"type": "content", "paragraphs": paragraphs, "className": ""})
 
     elif route == "/servicos":
         sections.append({"type": "hero", "title": "Nossos Servicos", "text": "Conheca tudo o que oferecemos", "className": ""})
         card_items = []
-        for t in content_data["highlights"][:3] + content_data["short"][:4]:
-            card_items.append({"title": t[:50], "text": t[:150]})
+        for t in content_data["highlights"][:8] + content_data["short"][:8] + content_data["features"][:6]:
+            card_items.append({"title": t[:80], "text": t})
         if card_items:
             sections.append({"type": "cards", "items": card_items, "className": ""})
-        if content_data["long"]:
-            sections.append({"type": "content", "paragraphs": content_data["long"][:4], "className": ""})
+        svc_paras = _content_paragraphs(content_data, max_items=20)
+        if svc_paras:
+            sections.append({"type": "content", "paragraphs": svc_paras, "className": ""})
 
     elif route == "/planos":
         sections.append({"type": "hero", "title": "Planos e Precos", "text": "Escolha o plano ideal para voce", "className": ""})
+        plan_texts = [t for t in content_data["features"] + content_data["all"] if "plano" in t.lower()]
+        if not plan_texts:
+            plan_texts = content_data["highlights"][:6]
         price_items = []
-        names = ["Basico", "Profissional", "Premium"]
-        for i, name in enumerate(names):
-            price_items.append({"name": name, "price": "Sob consulta", "features": [t[:60] for t in content_data["highlights"][:3]], "cta": "Contratar"})
+        if plan_texts:
+            for i, t in enumerate(plan_texts[:3]):
+                name = t.split(":")[0][:40] if ":" in t else f"Plano {i + 1}"
+                price_items.append({
+                    "name": name,
+                    "price": "Sob consulta",
+                    "features": [t[:120]],
+                    "cta": "Contratar",
+                })
+        else:
+            for name in ["Basico", "Profissional", "Enterprise"]:
+                price_items.append({"name": name, "price": "Sob consulta", "features": [], "cta": "Contratar"})
         if price_items:
             sections.append({"type": "pricing", "plans": price_items, "className": ""})
+        plan_paras = _content_paragraphs(content_data, max_items=15)
+        if plan_paras:
+            sections.append({"type": "content", "paragraphs": plan_paras, "className": ""})
 
     elif route == "/suporte":
         sections.append({"type": "hero", "title": "Fale Conosco", "text": "Estamos aqui para ajudar", "className": ""})
         sections.append({"type": "form", "fields": [{"name": "nome", "type": "text", "label": "Nome", "required": True}, {"name": "email", "type": "email", "label": "E-mail", "required": True}, {"name": "mensagem", "type": "textarea", "label": "Mensagem", "required": True}], "submit_label": "Enviar Mensagem", "className": "max-w-lg mx-auto"})
-        if content_data["cta"]:
-            sections.append({"type": "content", "paragraphs": content_data["cta"][:2], "className": ""})
+        sup_paras = content_data["cta"][:6] + _content_paragraphs(content_data, max_items=10)
+        if sup_paras:
+            sections.append({"type": "content", "paragraphs": sup_paras, "className": ""})
 
     elif route == "/conta":
         sections.append({"type": "hero", "title": "Minha Conta", "text": "Gerencie seu perfil e preferencias", "className": ""})
@@ -197,6 +244,23 @@ def _build_page_for_route(route, label, content_data, client, project_name):
 
     sections.append({"type": "footer", "text": f"(c) 2026 {client}. Todos os direitos reservados.", "className": ""})
     return sections
+
+
+def _full_text_blob_from_sections(sections: list) -> str:
+    """Serializa secoes para checagem de preservacao (debug)."""
+    parts = []
+    for s in sections:
+        for k in ("title", "text", "button_label"):
+            if s.get(k):
+                parts.append(str(s[k]))
+        for item in s.get("items", []) or []:
+            parts.extend([str(item.get("title", "")), str(item.get("text", ""))])
+        for p in s.get("paragraphs", []) or []:
+            parts.append(str(p))
+        for plan in s.get("plans", []) or []:
+            parts.append(str(plan.get("name", "")))
+            parts.extend(plan.get("features", []) or [])
+    return " ".join(parts)
 
 
 def _hex_to_hsl(hex_color):

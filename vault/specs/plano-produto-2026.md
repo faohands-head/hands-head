@@ -17,8 +17,8 @@ Website comum → **WebApp real** (App Shell, PWA, IR v1.0.0, patch incremental,
 
 | # | Nome | Status | Meta |
 |---|------|--------|------|
-| 0 | Fundação e higiene | **em andamento** | Git limpo, manifest, segurança |
-| 1 | Pipeline URL confiável | pendente | Preservação ≥95% VIP |
+| 0 | Fundação e higiene | **concluida** | Git limpo, manifest, segurança |
+| 1 | Pipeline URL confiável | **em andamento** | VIP briefing 100% preservação |
 | 2 | IR como contrato único | pendente | URL/prompt/briefing → AppIR |
 | 3 | App Shell produção | pendente | PWA + shell responsivo |
 | 4 | Agentes + Patch | pendente | JSON Patch sem rebuild |
@@ -33,7 +33,7 @@ Website comum → **WebApp real** (App Shell, PWA, IR v1.0.0, patch incremental,
 - [x] `projects.json` alinhado ao disco
 - [x] Fatal Model duplicados → `projects/_archive/`
 - [ ] Rotacionar API keys (ação manual do operador)
-- [ ] Commit + push `main`
+- [x] Commit + push `main` (`b237ccd`)
 
 ## Próximo passo imediato (Etapa 1)
 
@@ -42,4 +42,13 @@ cd C:\FaoFluxo\FAO-HANDS
 python scripts\validate_preservation.py --url https://acessosvipclientes.com.br/ --slug websiteapp-acessosvipclientes-com-br-56722640
 ```
 
-(criar script na Etapa 1)
+```powershell
+py -3 scripts\validate_preservation.py --url https://acessosvipclientes.com.br/ --project websiteapp-acessosvipclientes-com-br-56722640 --texts-file vault/briefings/acessosvip-websiteapp.md
+# Ou rebuild:
+py -3 scripts\websiteapp.py --from-brain acessosvip-websiteapp.md --out-dir websiteapp-acessosvipclientes-com-br-56722640 --no-install --strict
+```
+
+- [x] `validate_preservation.py` com match fuzzy + filtro cPanel
+- [x] Briefing merge quando site = placeholder hospedagem
+- [x] Golden VIP regenerado: **100%** (16/16 textos)
+- [ ] Preservação com scrape real quando DNS apontar para site real
