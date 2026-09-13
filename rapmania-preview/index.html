@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#050705">
+  <title>Rapmania 2026 — Bebop Gate</title>
+  <meta name="description" content="Ative seu Rapmania Pass e entre na experiência do Festival Rapmania 2026.">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="gate-app">
+    <header class="gate-topbar">
+      <div class="gate-state"><span class="live-dot"></span> RAPMANIA PASS · GATE</div>
+      <button class="icon-button" aria-label="Ajuda">?</button>
+    </header>
+
+    <section class="gate-shell">
+      <div class="gate-copy">
+        <img class="brand-logo" src="./assets/logo.webp" alt="Festival Rapmania 2026">
+        <p class="eyebrow">WEBSITE POR CONVITE · GOIÂNIA</p>
+        <h1>O BEBOP ABRE <span>A PORTA.</span></h1>
+        <p class="lead">Ative seu Rapmania Pass, gere sua arte oficial e entre na experiência privada do Festival Rapmania 2026.</p>
+        <div class="steps" aria-label="Etapas do Rapmania Pass">
+          <b>Foto</b><i>→</i><b>Arte oficial</b><i>→</i><b>Compartilhe</b><i>→</i><b>Entre</b>
+        </div>
+        <div class="actions">
+          <button class="primary" id="activate">ATIVAR MEU RAPMANIA PASS</button>
+          <button class="secondary" id="invite">TENHO UM CÓDIGO DE CONVITE</button>
+        </div>
+        <p class="microcopy">30–60 segundos · sem cadastro longo · sem áudio automático</p>
+      </div>
+
+      <div class="gate-visual" aria-label="Bebop, anfitrião do Rapmania">
+        <div class="halo"></div>
+        <img class="bebop" src="./assets/bebop.webp" alt="Bebop, mascote anfitrião do Festival Rapmania">
+        <div class="host-card"><strong>BEBOP</strong><span>Seu anfitrião no Rapmania</span></div>
+      </div>
+    </section>
+
+    <footer class="gate-footer">
+      <a href="#">Privacidade</a><a href="#">Termos</a><a href="#">Acessibilidade</a><a href="#">Contato e suporte</a>
+    </footer>
+  </main>
+
+  <section class="sheet" id="sheet" aria-hidden="true">
+    <div class="sheet-inner">
+      <button class="back" id="back" aria-label="Voltar">←</button>
+      <div id="uploadFlow">
+        <p class="eyebrow sheet-eyebrow">RAPMANIA CREATOR ENGINE</p>
+        <h2>ESCOLHA SUA FOTO.</h2>
+        <p class="sheet-lead">Envie uma foto ou capture pelo celular. Você poderá ajustar o enquadramento antes da arte final.</p>
+        <label class="upload-box">
+          <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" capture="user">
+          <span class="plus">＋</span>
+          <strong>CÂMERA OU GALERIA</strong>
+          <small>JPEG · PNG · WebP</small>
+        </label>
+        <img id="preview" class="preview" alt="Prévia da foto selecionada">
+        <button class="primary continue" id="continue">CONTINUAR PARA O PREVIEW</button>
+      </div>
+
+      <div id="inviteFlow" class="invite-flow">
+        <p class="eyebrow sheet-eyebrow">ACESSO ALTERNATIVO</p>
+        <h2>CÓDIGO DE CONVITE</h2>
+        <p class="sheet-lead">Para imprensa, artistas, equipe e convidados autorizados.</p>
+        <input class="invite-input" type="text" placeholder="RAP-XXXX-XXXX" maxlength="16">
+        <button class="primary continue">VALIDAR CÓDIGO</button>
+      </div>
+    </div>
+  </section>
+  <script src="./app.js"></script>
+</body>
+</html>
