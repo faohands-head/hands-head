@@ -1,0 +1,8 @@
+{
+  "name": "rapmania-2026-launch",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rm -rf out bundle.zip && mkdir -p out && cat bundle.part* | base64 -d > bundle.zip && unzip -q bundle.zip -d out && test -f out/index.html && test -f out/rapmania.js"
+  }
+}
